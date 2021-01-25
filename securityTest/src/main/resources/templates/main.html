@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="ko">
+<head>
+
+<th:block th:replace="/header :: cssheader"></th:block>
+
+<meta charset="UTF-8">
+<title>메인 페이지</title>
+
+
+
+</head>
+<body>
+	<!-- 해더 -->
+	<div th:replace="/header :: header"></div>
+
+	<br>
+	<!-- 업무보고 영역 -->
+	
+	
+<script src="http://code.jquery.com/jquery-latest.js"></script>
+<script>
+	function checkForm(event) {
+		event.preventDefault();
+		var form = document.writeForm;
+		var title = form.name.value;
+		var writer = form.email.value;
+		var content = form.password.value;
+
+		if (title == null || title == "") {
+			alert("제목은 필수입니다.");
+			return;
+		} else if (writer == null || writer == "") {
+			alert("이름은 필수입니다.");
+			return;
+		} else if (content == null || content == "") {
+			alert("내용은 필수입니다.");
+			return;
+		}
+
+		var params = $("#writeForm").serialize(); // serialize() : 입력된 모든Element(을)를 문자열의 데이터에 serialize 한다.
+		$.ajax({
+			url : 'insertBoard',
+			type : 'POST',
+			data : params,
+			contentType : 'application/x-www-form-urlencoded; charset=UTF-8',
+			dataType : 'text',
+			success : function(data) {
+				if (data == 'success') {
+					alert("등록 되었습니다.");
+					location.href = "/main.do";
+				} else {
+					alert("등록실패");
+				}
+			}
+		});
+		return;
+	}
+	
+	function deleteBoard(id) {
+		$.ajax({
+			url : 'deleteBoard',
+			type : 'post',
+			data : {
+				id : id
+			},
+			contentType : 'application/x-www-form-urlencoded; charset=UTF-8',
+			dataType : 'text',
+			success : function(data) {
+				if (data == 'success') {
+					alert("삭제완료");
+					location.href = "/main.do";
+				} else {
+					alert("등록실패");
+				}
+			}
+		});
+		return;
+	}
+
+	function selectBoard(id) {
+		$.ajax({
+			url : 'selectBoard',
+			type : 'get',
+			data : {
+				id : id
+			},
+			contentType : 'application/x-www-form-urlencoded; charset=UTF-8',
+			dataType : 'json',
+			success : function(data) {
+				console.log(data);
+				var updateForm = document.updateForm;
+				updateForm.email.value = data.email;
+				updateForm.id.value = data.id;
+				updateForm.name.value = data.name;
+				updateForm.password.value = data.password;
+			}
+		});
+		return;
+	}
+
+	function checkUpdateForm(event) {
+		event.preventDefault();
+
+		var params = $("#updateForm").serialize();
+		$.ajax({
+			url : 'updateBoard',
+			type : 'put',
+			data : params,
+			contentType : 'application/x-www-form-urlencoded; charset=UTF-8',
+			dataType : 'text',
+			success : function(data) {
+				if (data == 'success') {
+					alert("수정완료.");
+					location.href = "/main.do";
+				} else {
+					alert("실패");
+					return;
+				}
+			}
+		});
+	}
+	
+	function moveReportPage(){
+		location.href="/report";
+	}
+</script>
+
+</html>

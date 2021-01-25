@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE configuration 	PUBLIC "-//mybatis.org//DTD Config 3.0//EN"
+	"http://mybatis.org/dtd/mybatis-3-config.dtd">
+
+<configuration>
+	<typeAliases>
+	<typeAlias type="com.example.demo.test.user.vo.UserVO"  alias="user" />
+	</typeAliases>
+	
+	<!-- mapper .xmp 파일 정의 - 실제 SQL Query 가 선언되어 있는 부분 -->
+	    <mappers>
+		<mapper resource="mybatis/model/user-model.xml"/>
+		</mappers>        
+</configuration> 

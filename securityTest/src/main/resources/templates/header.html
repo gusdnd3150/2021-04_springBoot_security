@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="ko">
+<head>
+
+
+<th:block th:fragment="cssheader">
+<script src="http://code.jquery.com/jquery-latest.js"></script>
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.2/css/bootstrap.min.css">
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.2/css/bootstrap-theme.min.css">
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.2/js/bootstrap.min.js"></script>
+<link rel="stylesheet" href="https://pro.fontawesome.com/releases/v5.10.0/css/all.css" integrity="sha384-AYmEC3Yw5cVb3ZcuHtOA93w35dYTsvhLPVnYs9eStHfGJvOvKxVfELGroGkvsg+p" crossorigin="anonymous"/>
+
+<style type="text/css">
+body{
+ font-family: 'Noto Sans KR', sans-serif; 
+}
+
+.scale {
+  transform: scale(1);
+  -webkit-transform: scale(1);
+  -moz-transform: scale(1);
+  -ms-transform: scale(1);
+  -o-transform: scale(1);
+  transition: all 0.1s ease-in-out;   /* 부드러운 모션을 위해 추가*/
+}
+.scale:hover {
+  transform: scale(1.1);
+  -webkit-transform: scale(1.2);
+  -moz-transform: scale(1.2);
+  -ms-transform: scale(1.2);
+  -o-transform: scale(1.2);
+}
+
+
+</style>
+
+</th:block>
+
+<meta charset="UTF-8">
+<title>Insert title here</title>
+</head>
+<body>
+
+<header>
+<div class="container">
+  <!-- <a href="/main.do"><img src="/images/innospeechLogo.png" width="130px"></a> -->
+  <ul class="nav nav-tabs" role="tablist">
+    <li><a href="#">test</a></li>
+    <li><a href="/board/list">board</a></li>
+    <li><a href="#">통계</a></li>
+    <!-- <li th:if="${session.LOGIN==null}" style="float:right"><a href="/JoinUser.do">회원가입</a></li> -->
+    <li th:if="${session.LOGIN==null}" style="float:right"><a href="/loginForm.do">Login</a></li>
+    <li th:if="${session.LOGIN!=null}" style="float:right"><a href="/logOut">Logout</a></li>
+  </ul>
+</div>
+
+
+</header>
+
+</body>
+</html>
