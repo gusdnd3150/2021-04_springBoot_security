@@ -70,8 +70,15 @@ public class TestController {
 		
 		System.out.println("제발");
 		
-		return "boardList";
+		return "main";
 		
+	}
+	
+	@RequestMapping("/errorPage")
+	public String errorPage() {
+		System.out.println("접근불가입니다./");
+		// 페이지를 연결해주면 됌
+		return "main";
 	}
 
 }

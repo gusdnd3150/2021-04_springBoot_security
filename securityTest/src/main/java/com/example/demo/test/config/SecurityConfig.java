@@ -10,15 +10,9 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.builders.WebSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
-import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 
-import com.example.demo.test.user.service.UserService;
 
 import lombok.extern.java.Log;
 
@@ -27,66 +21,74 @@ import lombok.extern.java.Log;
 @EnableWebSecurity
 public class SecurityConfig extends WebSecurityConfigurerAdapter {
 	
-	@Autowired
-    private UserDetailsService userDetailsService;
+	 // 정적 자원에 대해서는 Security 설정을 적용하지 않음.
 	
-	@Override
+    @Override
     public void configure(WebSecurity web) {
+        web.ignoring().requestMatchers(PathRequest.toStaticResources().atCommonLocations());
     }
 
     @Override
     protected void configure(HttpSecurity http) throws Exception {
-    	 http.authorizeRequests()
-         .antMatchers("/user/update", "/user/logout").authenticated()
-         .antMatchers("/board/write", "/board/delte", "/board/modify", "/board/list").authenticated()
-         .antMatchers("/admin/**").hasAuthority("role_admin")
-         .anyRequest().permitAll();
-
-     http.csrf().disable();
-
-     // 2. 로그인 설정
-     http
-         .formLogin()
-         .loginPage("/loginForm.do") 	// 로그인 페이지 url
-         .loginProcessingUrl("loginForm")  // view form의 action과 맞아야함
-         .failureUrl("/user/login?error=fail") // 로그인 실패시 redirect
-         .defaultSuccessUrl("/main.do", true) // 로그인 성공시
-        // .successHandler(MySimpleUrlAuthenticationSuccessHandler())
-         .usernameParameter("username")  // 로그인 요청시 id용 파라미터 (메소드 이름이 usernameParameter로 무조건 써야하지만, 파라미터는 email이든 id이든 name이든 상관없다.)
-         .passwordParameter("password");	// 로그인 요청시 password용 파라미터
-
-     // 3. 로그아웃 설정
-     http
-         .logout()
-         .logoutRequestMatcher(new AntPathRequestMatcher("/user/logout"))
-         .logoutSuccessUrl("/") // 로그아웃 성공시
-         .invalidateHttpSession(true);
+        http.csrf().disable().authorizeRequests()
+                // /about 요청에 대해서는 로그인을 요구함
+                //.antMatchers("/board/**").authenticated()
+        		.antMatchers("/board/**").hasRole("USER")
+                // /admin 요청에 대해서는 ROLE_ADMIN 역할을 가지고 있어야 함
+                .antMatchers("/admin").hasRole("ADMIN")
+                // 나머지 요청에 대해서는 로그인을 요구하지 않음
+                .anyRequest().permitAll()
+                .and()
+                .logout().logoutSuccessUrl("/logoutURL")
+                .and()
+                .exceptionHandling().accessDeniedPage("/errorPage")
+                .and()
+                // 로그인하는 경우에 대해 설정함
+            .formLogin()
+                // 로그인 페이지를 제공하는 URL을 설정함
+             	.loginProcessingUrl("/loginForm")
+                .loginPage("/loginForm.do")
+                // 로그인 성공 URL을 설정함
+                //.successForwardUrl("/main.do")
+                .usernameParameter("userId")
+                .passwordParameter("password")
+                .successHandler(customLoginSuccessHandler())
+                // 로그인 실패 URL을 설정함
+                .failureForwardUrl("/main.do")
+                .permitAll()
+                .and()
+                .addFilterBefore(customAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class)
+                
+                ;
+         
     }
 
-  
-    
     @Bean
     public BCryptPasswordEncoder bCryptPasswordEncoder() {
         return new BCryptPasswordEncoder();
     }
-    
-    @Override
-    protected void configure(AuthenticationManagerBuilder auth) throws Exception {
-         auth.userDetailsService(userDetailsService).passwordEncoder(bCryptPasswordEncoder());
-    }
-    
-    
-	/*
-	 * @Bean public AuthenticationSuccessHandler myAuthenticationSuccessHandler(){
-	 * return new MySimpleUrlAuthenticationSuccessHandler(); }
-	 */
-    
-    
+
     @Bean
-    public DaoAuthenticationProvider authenticationProvider() {
-        DaoAuthenticationProvider authProvider = new DaoAuthenticationProvider();
-        authProvider.setUserDetailsService(userDetailsService);
-        authProvider.setPasswordEncoder(bCryptPasswordEncoder());
-        return authProvider;
+    public CustomAuthenticationFilter customAuthenticationFilter() throws Exception {
+        CustomAuthenticationFilter customAuthenticationFilter = new CustomAuthenticationFilter(authenticationManager());
+        //customAuthenticationFilter.setFilterProcessesUrl("/user/login");
+        customAuthenticationFilter.setAuthenticationSuccessHandler(customLoginSuccessHandler());
+        customAuthenticationFilter.afterPropertiesSet();
+        return customAuthenticationFilter;
+    }
+
+    @Bean
+    public CustomLoginSuccessHandler customLoginSuccessHandler() {  // 빈등록
+        return new CustomLoginSuccessHandler();
+    }
+
+    @Bean
+    public CustomAuthenticationProvider customAuthenticationProvider() {      //빈등록
+        return new CustomAuthenticationProvider(bCryptPasswordEncoder());
+    }
+
+    @Override
+    public void configure(AuthenticationManagerBuilder authenticationManagerBuilder) {   //빈 주입
+        authenticationManagerBuilder.authenticationProvider(customAuthenticationProvider());
     }
 }

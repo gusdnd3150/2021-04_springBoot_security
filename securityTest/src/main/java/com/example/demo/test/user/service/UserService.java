@@ -1,5 +1,6 @@
 package com.example.demo.test.user.service;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
@@ -8,16 +9,19 @@ import javax.servlet.http.HttpSession;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import com.example.demo.test.user.dao.TestDAO;
+import com.example.demo.test.user.vo.UserDetailsVO;
 import com.example.demo.test.user.vo.UserVO;
 
 
 @Service
-public class UserService  {
+public class UserService implements UserDetailsService {
 	
 	
 	@Autowired
@@ -74,6 +78,20 @@ public class UserService  {
 			}
 			
 			return result;
+		}
+
+
+
+		@Override
+		public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
+			UserDetailsVO user = new UserDetailsVO();
+			System.out.println("유저 파람정보:"+username);
+			user.setUsername("user");
+			user.setPassword("123");
+			List<String> authoList = new ArrayList<String>();
+			authoList.add("USER");
+			System.out.println("검사한다~");
+			return user;
 		}
 	
 }
