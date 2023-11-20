@@ -1,0 +1,141 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper 
+	PUBLIC "-//mybatis.org//DTDMapper3.0//EN" 
+		   "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper
+	namespace="com.module.dao.UserDao">
+
+	<select id="loadUser" resultType="com.module.util.UserMap">
+	<![CDATA[	
+		SELECT 
+			LOGIN_ID
+			, LOGIN_PW
+			, USER_KO_FAM_NM
+			, USER_KO_NM
+			, USER_EN_FAM_NM
+			, USER_EN_NM
+			, EMAIL_ADDR
+			, MOBILE_NO
+			, USER_STAT
+			, LANG_CD
+			, DEL_YN
+			, LOGIN_DT
+			, PW_CHG_DT
+			, LOGN_FAIL_CNT
+			, ISACCOUNTNONEXPIRED
+			, ISACCOUNTNONLOCKED
+			, ISCREDENTIALSNONEXPIRED
+			, ISENABLED
+		FROM TB_SK_USER 
+		WHERE LOGIN_ID = #{LOGIN_ID}
+	]]>
+	</select>
+
+	<select id="loadAuthority" resultType="com.module.util.UserMap">
+	<![CDATA[	
+		SELECT 
+			LOGIN_ID
+			, USER_AUTH 
+		FROM TB_SK_USER_AUTH 
+		WHERE LOGIN_ID = #{LOGIN_ID}
+	]]>
+	</select>
+	
+	<insert id="insertUser">
+	<![CDATA[	
+		INSERT INTO TB_SK_USER 
+		(
+			LOGIN_ID
+			, LOGIN_PW
+			, USER_KO_FAM_NM
+			, USER_KO_NM
+			, USER_EN_FAM_NM
+			, USER_EN_NM
+			, EMAIL_ADDR
+			, MOBILE_NO
+			, USER_STAT
+			, LANG_CD
+			, DEL_YN
+			, LOGIN_DT
+			, PW_CHG_DT
+			, LOGN_FAIL_CNT
+			, ISACCOUNTNONEXPIRED
+			, ISACCOUNTNONLOCKED
+			, ISCREDENTIALSNONEXPIRED
+			, ISENABLED
+		) 
+		VALUES 
+		(
+			#{LOGIN_ID}
+			, #{LOGIN_PW}
+			, #{USER_KO_FAM_NM}
+			, #{USER_KO_NM}
+			, #{USER_EN_FAM_NM}
+			, #{USER_EN_NM}
+			, #{EMAIL_ADDR}
+			, #{MOBILE_NO}
+			, #{USER_STAT}
+			, #{LANG_CD}
+			, #{DEL_YN}
+			, #{LOGIN_DT}
+			, #{PW_CHG_DT}
+			, #{LOGN_FAIL_CNT}
+			, #{ISACCOUNTNONEXPIRED}
+			, #{ISACCOUNTNONLOCKED}
+			, #{ISCREDENTIALSNONEXPIRED}
+			, #{ISENABLED}
+		)
+	]]>
+	</insert>
+	
+	<update id="updateUser">
+	<![CDATA[	
+	
+	]]>
+	</update>
+	
+	<delete id="deleteUser">
+	<![CDATA[	
+	
+	]]>
+	</delete>
+	
+	<insert id="insertAuthority">
+	<![CDATA[	
+		INSERT INTO TB_SK_USER_AUTH 
+		(
+			LOGIN_ID
+			, USER_AUTH
+		)
+		VALUES
+	]]>
+		<foreach item="item" collection="AUTHORITIES" separator=",">
+		(
+			#{LOGIN_ID}
+			, #{item.authority}
+		)
+		</foreach>
+	</insert>
+	
+	<update id="updateAuthority">
+	<![CDATA[	
+	
+	]]>
+	</update>
+	
+	<delete id="deleteAuthority">
+	<![CDATA[	
+	
+	]]>
+	</delete>
+	
+	<select id="getAuthUrl" resultType="com.module.util.UserMap">
+	<![CDATA[	
+		SELECT 
+			ID
+			, URL
+			, HAS_AUTHORITY
+		FROM TB_SK_AUTH_URL
+	]]>
+	</select>
+</mapper>

@@ -1,0 +1,176 @@
+package com.module.util.system.security.filter;
+
+import io.jsonwebtoken.ExpiredJwtException;
+import io.jsonwebtoken.JwtException;
+import io.jsonwebtoken.SignatureException;
+
+import org.codehaus.jettison.json.JSONObject;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.lang.NonNull;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.stereotype.Component;
+import org.springframework.util.StringUtils;
+import org.springframework.web.filter.OncePerRequestFilter;
+
+import com.module.util.system.security.WebSecurityConfig;
+import com.module.util.system.security.utils.TokenUtils;
+
+import javax.servlet.FilterChain;
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+
+
+/**
+ * 지정한 URL 별 JWT 유효성 검증을 수행하며 직접적인 사용자 '인증'을 확인합니다.
+ *
+ * @author lee
+ * @fileName JwtAuthorizationFilter
+ * @since 2022.12.23
+ */
+//@Component
+public class JwtAuthorizationFilter extends OncePerRequestFilter {
+	
+	
+	private static final Logger logger = LoggerFactory.getLogger(JwtAuthorizationFilter.class);
+
+    @Override
+    protected void doFilterInternal(HttpServletRequest request, @NonNull HttpServletResponse response, @NonNull FilterChain chain)
+            throws IOException, ServletException {
+    	
+    	String requestURI = request.getRequestURI();
+
+    	logger.info("ddddddddddddddddddd");
+        // 1. 토큰이 필요하지 않은 API URL에 대해서 배열로 구성합니다.
+        List<String> list = Arrays.asList(
+                "/loginProcess",
+                "/api/v1/test/generateToken",
+                "/api/v1/token/generateToken"
+        );
+
+        // 2. 토큰이 필요하지 않은 API URL의 경우 => 로직 처리 없이 다음 필터로 이동
+        if (list.contains(request.getRequestURI())) {
+            chain.doFilter(request, response);
+            return;
+        }
+
+        // 3. OPTIONS 요청일 경우 => 로직 처리 없이 다음 필터로 이동
+        if (request.getMethod().equalsIgnoreCase("OPTIONS")) {
+            chain.doFilter(request, response);
+            return;
+        }
+
+        // [STEP1] Client에서 API를 요청할때 Header를 확인합니다.
+        String header = request.getHeader("test-header");
+        logger.info("[+] header Check: " + header);
+
+        try {
+            // [STEP2-1] Header 내에 토큰이 존재하는 경우
+            if (header != null && !header.equalsIgnoreCase("")) {
+
+                // [STEP2] Header 내에 토큰을 추출합니다.
+                //String token = TokenUtils.getTokenFromHeader(header);
+                String token = header;
+                
+                // version 222222222222
+                if (TokenUtils.isValidToken(token)) {
+                	logger.info("TokenUtils.isValidToken(token) ----"+TokenUtils.isValidToken(token));
+                    Authentication authentication = TokenUtils.getAuthentication(token);
+                    SecurityContextHolder.getContext().setAuthentication(authentication);
+                    logger.info("Security Context에 '{}' 인증 정보를 저장했습니다, uri: {}", authentication.getName(), requestURI);
+                } else {
+                    logger.info("유효한 JWT 토큰이 없습니다, uri: {}", requestURI);
+                }
+                chain.doFilter(request, response);
+
+                /*    version 1111111111
+                // [STEP3] 추출한 토큰이 유효한지 여부를 체크합니다.
+                if (TokenUtils.isValidToken(token)) {
+
+                    // [STEP4] 토큰을 기반으로 사용자 아이디를 반환 받는 메서드
+                    String userId = TokenUtils.getUserIdFromToken(token);
+                    logger.debug("[+] userId Check: " + userId);
+
+                    // [STEP5] 사용자 아이디가 존재하는지 여부 체크
+                    if (userId != null && !userId.equalsIgnoreCase("")) {
+                        chain.doFilter(request, response);
+                    } else {
+                        //throw new BusinessExceptionHandler("TOKEN isn't userId", ErrorCode.BUSINESS_EXCEPTION_ERROR);
+                    }
+                    // 토큰이 유효하지 않은 경우
+                } else {
+                    //throw new BusinessExceptionHandler("TOKEN is invalid", ErrorCode.BUSINESS_EXCEPTION_ERROR);
+                }
+                */
+            }
+            // [STEP2-1] 토큰이 존재하지 않는 경우
+            else {
+                //throw new BusinessExceptionHandler("Token is null", ErrorCode.BUSINESS_EXCEPTION_ERROR);
+            }
+        } catch (Exception e) {
+            // Token 내에 Exception이 발생 하였을 경우 => 클라이언트에 응답값을 반환하고 종료합니다.
+            response.setCharacterEncoding("UTF-8");
+            response.setContentType("application/json");
+            PrintWriter printWriter = response.getWriter();
+            JSONObject jsonObject = jsonResponseWrapper(e);
+            printWriter.print(jsonObject);
+            printWriter.flush();
+            printWriter.close();
+        }
+    }
+
+    
+    
+    // Request Header 에서 토큰 정보를 꺼내오기 위한 메소드
+    private String resolveToken(HttpServletRequest request) {
+        String bearerToken = request.getHeader("test-header");
+
+        if (StringUtils.hasText(bearerToken) && bearerToken.startsWith("Bearer ")) {
+            return bearerToken.substring(7);
+        }
+
+        return null;
+    }
+    
+    /**
+     * 토큰 관련 Exception 발생 시 예외 응답값 구성
+     *
+     * @param e Exception
+     * @return JSONObject
+     */
+    private JSONObject jsonResponseWrapper(Exception e) {
+
+        String resultMsg = "";
+        // JWT 토큰 만료
+        if (e instanceof ExpiredJwtException) {
+            resultMsg = "TOKEN Expired";
+        }
+        // JWT 허용된 토큰이 아님
+        else if (e instanceof SignatureException) {
+            resultMsg = "TOKEN SignatureException Login";
+        }
+        // JWT 토큰내에서 오류 발생 시
+        else if (e instanceof JwtException) {
+            resultMsg = "TOKEN Parsing JwtException";
+        }
+        // 이외 JTW 토큰내에서 오류 발생
+        else {
+            resultMsg = "OTHER TOKEN ERROR";
+        }
+        HashMap<String, Object> jsonMap = new HashMap<>();
+        jsonMap.put("status", 401);
+        jsonMap.put("code", "9999");
+        jsonMap.put("message", resultMsg);
+        jsonMap.put("reason", e.getMessage());
+        JSONObject jsonObject = new JSONObject(jsonMap);
+        logger.error(resultMsg, e);
+        return jsonObject;
+    }
+}

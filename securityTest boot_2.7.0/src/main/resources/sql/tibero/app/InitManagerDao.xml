@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper 
+	PUBLIC "-//mybatis.org//DTDMapper3.0//EN" 
+		   "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.module.dao.InitManagerDao">
+
+	<select id="selectTbBiTool" resultType="com.spas.module.socket.utility.CMap">
+	<![CDATA[
+	SELECT 
+		TOOL_ID
+		, TOOL_TY
+		, USE_YN
+		, TOOL_NM
+		, LINE_CD
+		, PROC_CD
+		, TOOL_IP
+		, TOOL_PORT
+		, TOOL_MAKE
+		, TOOL_MODEL
+		, TOOL_MODL_CD
+		, COMM_STAT_CD
+		, JOB_SET_YN
+		, INTERLOCK_YN
+		, DEVICE_CD
+		, DEVICE_NO
+		, MAPP_CD
+		, MES_SEND_YN
+		, HIVIS_SEND_YN
+		, CONN_TY
+		, PROC_CD_WARN
+		, PROC_CD_STOP
+		, MAIN_TOOL_ID
+	FROM TB_BI_TOOL
+	WHERE USE_YN = 'Y'
+	]]>
+	</select>
+
+	<select id="selectTbBiCar" resultType="com.spas.module.socket.utility.CMap">
+	<![CDATA[
+	SELECT
+		CAR_CD
+		, CAR_L
+		, CAR_W
+		, CAR_H
+		, TAG_POS_X
+		, TAG_POS_Y
+		, TAG_POS_Z
+		, REMK
+		, BCR_NO
+	FROM TB_BI_CAR
+	]]>
+	</select>
+	
+</mapper>

@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper 
+	PUBLIC "-//mybatis.org//DTDMapper3.0//EN" 
+		   "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.module.dao.CtrlDao">
+	
+	<select id="selectCtrlInfo" resultType="com.spas.module.socket.utility.CMap">
+	<![CDATA[
+	SELECT
+		CTRL_ID
+		, IP_ADDR
+		, SVR_PORT
+		, CLNT_PORT
+		, LINE_CD
+		, CTRL_MAC
+		, PROC_CD as CTRL_PROC_CD_01
+	FROM TB_BI_CTRL
+	WHERE IP_ADDR = #{IP_ADDR}
+	]]>
+	</select>
+	
+	<update id="mergeTagStat">
+	/* RtlsDao.mergeTagStat */
+	<![CDATA[
+	MERGE INTO TB_RT_TAG_STAT MT
+		USING(
+			SELECT 
+				MAC_ADDR
+				, TAG_ID
+				, #{battery_level} AS BATTERY_LEVEL
+				, #{battery_voltage} AS BATTERY_VOLTAGE
+			FROM TB_BI_TAG
+			WHERE MAC_ADDR = #{MAC_ADDR}
+		) Z
+		ON (
+		MT.MAC_ADDR = Z.MAC_ADDR
+		)
+		WHEN MATCHED THEN
+			UPDATE SET
+				MT.TAG_ID   = Z.TAG_ID
+				, MT.BATTERY_LEVEL   = Z.BATTERY_LEVEL
+				, MT.BATTERY_VOLTAGE   = Z.BATTERY_VOLTAGE
+				, MT.UPD_DT = SYSDATE
+		WHEN NOT MATCHED THEN
+			INSERT (
+				MT.MAC_ADDR
+				, MT.TAG_ID
+				, MT.BATTERY_LEVEL
+				, MT.BATTERY_VOLTAGE
+				, REG_DT
+			)VALUES(
+				Z.MAC_ADDR
+				, Z.TAG_ID
+				, Z.BATTERY_LEVEL
+				, Z.BATTERY_VOLTAGE
+				, SYSDATE
+			)
+	]]>
+	</update>
+	
+	
+</mapper>

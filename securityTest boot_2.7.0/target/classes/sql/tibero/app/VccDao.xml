@@ -1,0 +1,483 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper 
+	PUBLIC "-//mybatis.org//DTDMapper3.0//EN" 
+		   "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.module.dao.VccDao">
+	
+	<insert id="insertToolInOut">
+	<![CDATA[
+	INSERT INTO TB_RC_TOOL_INOUT 
+	(
+		INOUT_SEQ
+		, TOOL_ID
+		, TAG_ID
+		, PROC_CD
+		, MES_PROD_SEQ
+		, BODY_NO
+		, INOUT_TY
+		, REG_DT
+	) 
+	values 
+	(
+		SQ_RC_TOOL_INOUT.NEXTVAL
+		, #{TOOL_ID}
+		, #{TAG_ID}
+		, #{PROC_CD}
+		, #{MES_PROD_SEQ}
+		, #{BODY_NO}
+		, #{INOUT_TY}
+		, SYSDATE
+	)
+	]]>
+	</insert>
+	
+	<insert id="insertTbRtPos">
+	<![CDATA[
+	INSERT INTO TB_RT_POS 
+	(
+		MES_PROD_SEQ
+		, TAG_ID
+		, LINE_CD
+		, PROC_CD
+		, CAR_CD
+		, BODY_NO
+		, POS_X
+		, POS_Y
+		, POS_Z
+		, ANGL
+		, LED_NO
+		, CAR_STAT
+		, PATH_INDEX
+		, REG_DT
+	) 
+	values 
+	(
+		#{MES_PROD_SEQ}
+		, #{TAG_ID}
+		, #{LINE_CD}
+		, #{PROC_CD}
+		, #{CAR_CD}
+		, #{BODY_NO}
+		, #{POS_X}
+		, #{POS_Y}
+		, #{POS_Z}
+		, #{ANGL}
+		, #{LED_NO}
+		, #{CAR_STAT}
+		, #{PATH_INDEX}
+		, SYSDATE
+	)
+	]]>
+	</insert>
+	
+	<insert id="insertTbRcMapping">
+	<![CDATA[
+	INSERT INTO TB_RC_MAPPING 
+	(
+		RC_POS_SEQ
+		, MES_PROD_SEQ
+		, TAG_ID
+		, BODY_NO
+		, REG_DT
+	) 
+	values 
+	(
+		SQ_RC_MAPPING.NEXTVAL
+		, #{MES_PROD_SEQ}
+		, #{TAG_ID}
+		, #{BODY_NO}
+		, SYSDATE
+	)
+	]]>
+	</insert>
+	
+	<select id="selectMaxMappingSeq" resultType="com.spas.module.socket.utility.CMap">
+	<![CDATA[
+	SELECT
+		MAX(MES_PROD_SEQ) AS MAX_MES_PROD_SEQ
+	FROM TB_RC_MAPPING
+	]]>
+	</select>
+	
+	<select id="selectTagTagId" resultType="com.spas.module.socket.utility.CMap">
+	<![CDATA[
+	SELECT
+		A.TAG_ID
+		, A.TAG_TY
+		, A.USE_YN
+		, A.MAC_ADDR
+		, B.BATTERY_LEVEL
+		, B.BATTERY_VOLTAGE
+	FROM (
+		SELECT
+			TAG_ID
+			, TAG_TY
+			, USE_YN
+			, MAC_ADDR
+		FROM TB_BI_TAG
+		WHERE TAG_TY = 'NA'
+		AND TAG_ID LIKE '%' ||  #{TAG_ID} || '%'
+		AND USE_YN = 'Y'
+	)A, (
+		SELECT
+			TAG_ID
+			, BATTERY_LEVEL
+			, BATTERY_VOLTAGE
+		FROM TB_RT_TAG_STAT
+	)B
+	WHERE A.TAG_ID = B.TAG_ID
+	]]>
+	</select>
+	
+	<select id="selectTagMacAddr" resultType="com.spas.module.socket.utility.CMap">
+	<![CDATA[
+	SELECT
+		A.TAG_ID
+		, A.TAG_TY
+		, A.USE_YN
+		, A.MAC_ADDR
+		, B.BATTERY_LEVEL
+		, B.BATTERY_VOLTAGE
+	FROM (
+		SELECT
+			TAG_ID
+			, TAG_TY
+			, USE_YN
+			, MAC_ADDR
+		FROM TB_BI_TAG
+		WHERE TAG_TY = 'NA'
+		AND USE_YN = 'Y'
+		AND MAC_ADDR = #{MAC_ADDR}
+	)A, (
+		SELECT
+			TAG_ID
+			, BATTERY_LEVEL
+			, BATTERY_VOLTAGE
+		FROM TB_RT_TAG_STAT
+	)B
+	WHERE A.TAG_ID = B.TAG_ID
+	]]>
+	</select>
+	
+	<select id="selectTagBat" resultType="com.spas.module.socket.utility.CMap">
+	<![CDATA[
+	SELECT
+		MAC_ADDR
+		, TAG_ID
+		, BATTERY_LEVEL
+		, BATTERY_VOLTAGE
+	FROM TB_RT_TAG_STAT
+	WHERE TAG_ID = #{TAG_ID}
+	OR MAC_ADDR = #{MAC_ADDR}
+	]]>
+	</select>
+	
+	<select id="selectUseReport" resultType="com.spas.module.socket.utility.CMap">
+	<![CDATA[
+	SELECT
+		BODY_NO
+		, REPORT_FLAG
+	FROM TB_RT_PROC_REPORT
+	WHERE TAG_ID = #{MAC_ADDR}
+	]]>
+	</select>
+	
+	<select id="selectUseTag" resultType="com.spas.module.socket.utility.CMap">
+	<![CDATA[
+	SELECT
+		*
+	FROM TB_RT_POS
+	WHERE TAG_ID = #{TAG_ID}
+	]]>
+	</select>
+	
+	<select id="selectLineReportList" resultType="com.spas.module.socket.utility.CMap">
+	<![CDATA[
+	SELECT 
+		* 
+	FROM TB_RT_POS 
+	WHERE LINE_CD = #{LINE_CD}
+	AND MES_PROD_SEQ <= (
+		SELECT
+			MAX(MES_PROD_SEQ)
+		FROM TB_RT_POS
+		WHERE PROC_CD = #{PROC_CD}
+	)
+	
+	ORDER BY MES_PROD_SEQ DESC 
+	FETCH FIRST 30 ROWS ONLY
+	]]>
+	</select>
+	
+	<select id="selectTagInOutList" resultType="com.spas.module.socket.utility.CMap">
+	<![CDATA[
+	SELECT
+		TAG_ID
+		, PROC_CD
+	FROM TB_RT_PBS_TAG_INOUT
+	]]>
+	</select>
+	
+	<select id="selectTbRtPos" resultType="com.spas.module.socket.utility.CMap">
+	<![CDATA[
+	SELECT 
+		* 
+	FROM TB_RT_POS 
+	WHERE BODY_NO = #{BODY_NO}
+	]]>
+	</select>
+		
+	<delete id="deleteTbRtPos">
+	<![CDATA[
+	DELETE FROM TB_RT_POS
+	WHERE MES_PROD_SEQ = #{MES_PROD_SEQ}
+	AND BODY_NO = #{BODY_NO}
+	]]>
+	</delete>
+	
+	<update id="updateTbRtPos">
+	<![CDATA[
+   MERGE INTO TB_RT_POS MT
+   USING (
+      SELECT
+         #{MES_PROD_SEQ} AS MES_PROD_SEQ
+         , #{TAG_ID} AS TAG_ID
+         , #{BODY_NO} AS BODY_NO
+         , #{LINE_CD} AS LINE_CD
+         , #{POS_X} AS POS_X
+         , #{POS_Y} AS POS_Y
+         , #{POS_Z} AS POS_Z
+         , #{CAR_ANGLE} AS ANGL
+         , #{CAR_STAT} AS CAR_STAT
+         , #{PATH_INDEX} AS PATH_INDEX
+      FROM DUAL
+   ) Z
+   ON (MT.MES_PROD_SEQ = Z.MES_PROD_SEQ)
+   WHEN MATCHED THEN
+      UPDATE SET
+         MT.TAG_ID = Z.TAG_ID
+         , MT.LINE_CD = Z.LINE_CD
+         , MT.POS_X = Z.POS_X
+         , MT.POS_Y = Z.POS_Y
+         , MT.POS_Z = Z.POS_Z
+         , MT.ANGL = Z.ANGL
+         , MT.CAR_STAT = Z.CAR_STAT
+         , MT.PATH_INDEX = Z.PATH_INDEX
+         , MT.UPD_DT = SYSDATE
+   WHEN NOT MATCHED THEN
+      INSERT (
+         MES_PROD_SEQ
+         , TAG_ID
+         , BODY_NO
+         , LINE_CD
+         , POS_X
+         , POS_Y
+         , POS_Z
+         , ANGL
+         , CAR_STAT
+         , PATH_INDEX
+         , REG_DT
+      )
+      VALUES
+      (
+         Z.MES_PROD_SEQ
+         , Z.TAG_ID
+         , Z.BODY_NO
+         , Z.LINE_CD
+         , Z.POS_X
+         , Z.POS_Y
+         , Z.POS_Z
+         , Z.ANGL
+         , Z.CAR_STAT
+         , Z.PATH_INDEX
+         , SYSDATE
+      )
+	]]>
+	</update>
+	
+	<update id="updateTbRtPosProcCd">
+	<![CDATA[
+	UPDATE TB_RT_POS SET PROC_CD = #{PROC_CD}
+	WHERE MES_PROD_SEQ = #{MES_PROD_SEQ}
+	]]>
+	</update>
+	
+	<update id="updateTbRtToolPos">
+	<![CDATA[
+   MERGE INTO TB_RT_TOOL_POS MT
+   USING (
+      SELECT
+         #{TOOL_ID} AS TOOL_ID
+         , #{TAG_ID} AS TAG_ID
+         , #{POS_X} AS POS_X
+         , #{POS_Y} AS POS_Y
+         , #{POS_Z} AS POS_Z
+      FROM DUAL
+   ) Z
+   ON (MT.TOOL_ID = Z.TOOL_ID)
+   WHEN MATCHED THEN
+      UPDATE SET
+         MT.TAG_ID = Z.TAG_ID
+         , MT.POS_X = Z.POS_X
+         , MT.POS_Y = Z.POS_Y
+         , MT.POS_Z = Z.POS_Z
+         , MT.UPD_DT = SYSDATE
+   WHEN NOT MATCHED THEN
+      INSERT (
+         TOOL_ID
+         , TAG_ID
+         , POS_X
+         , POS_Y
+         , POS_Z
+         , REG_DT
+      )
+      VALUES
+      (
+         Z.TOOL_ID
+         , Z.TAG_ID
+         , Z.POS_X
+         , Z.POS_Y
+         , Z.POS_Z
+         , SYSDATE
+      )
+	]]>
+	</update>
+	
+	<insert id="mergeTbRtProcInout">
+	/* VccDao.mergeTbRtProcInout */
+	<![CDATA[
+	MERGE INTO TB_RT_PROC_INOUT  A
+		USING (
+			SELECT 
+				#{MES_PROD_SEQ} AS MES_PROD_SEQ
+				, #{BODY_NO} AS BODY_NO
+				, #{PROC_CD} AS PROC_CD
+				, #{TAG_ID} AS TAG_ID
+			FROM DUAL
+		) B
+		ON (
+			A.PROC_CD = B.PROC_CD
+		)
+	WHEN MATCHED THEN
+		UPDATE SET
+			A.MES_PROD_SEQ = B.MES_PROD_SEQ
+			, A.BODY_NO = B.BODY_NO
+			, A.TAG_ID = B.TAG_ID
+	]]>
+			<if test="INOUT_TY == 'IN'">
+			, A.IN_DT = SYSDATE
+			, A.IN_MES_PROD_SEQ = B.MES_PROD_SEQ
+			</if>
+			<if test="INOUT_TY == 'OUT'">
+			, A.OUT_DT = SYSDATE
+			, A.OUT_MES_PROD_SEQ = B.MES_PROD_SEQ
+			</if>
+			
+	<![CDATA[
+	WHEN NOT MATCHED THEN
+		INSERT (
+			PROC_CD
+			, MES_PROD_SEQ
+			, BODY_NO
+			, TAG_ID
+			, REG_DT
+	]]>
+			<if test="INOUT_TY == 'IN'">
+			, IN_DT
+			, IN_MES_PROD_SEQ
+			</if>
+			<if test="INOUT_TY == 'OUT'">
+			, OUT_DT
+			, OUT_MES_PROD_SEQ
+			</if>
+	<![CDATA[
+		)
+		VALUES (
+			B.PROC_CD
+			, B.MES_PROD_SEQ
+			, B.BODY_NO
+			, B.TAG_ID
+			, SYSDATE
+	]]>
+			<if test="INOUT_TY == 'IN'">
+			, SYSDATE
+			, B.MES_PROD_SEQ
+			</if>
+			<if test="INOUT_TY == 'OUT'">
+			, SYSDATE
+			, B.MES_PROD_SEQ
+			</if>
+	<![CDATA[
+		)
+	 ]]>
+	</insert>
+	
+	<insert id="insertTbRcProcInout">
+	/* VccDao.insertTbRcProcInout */
+	<![CDATA[
+	INSERT INTO TB_RC_PROC_INOUT (
+		INOUT_SEQ
+		, MES_PROD_SEQ
+		, BODY_NO
+		, TAG_ID
+		, PROC_CD
+		, INOUT_TY
+		, REG_DT
+	)
+	VALUES
+	(
+		SQ_RC_PROC_INOUT.NEXTVAL
+		, #{MES_PROD_SEQ}
+		, #{BODY_NO}
+		, #{TAG_ID}
+		, #{PROC_CD}
+		, #{INOUT_TY}
+		, SYSDATE			
+	)
+	]]>
+	</insert>
+	
+	<delete id="deletePbslTagIn">
+	<![CDATA[
+	DELETE FROM TB_RT_PBS_TAG_INOUT
+	WHERE TAG_ID = #{TAG_ID}
+	AND PROC_CD = #{PROC_CD}
+	]]>
+	</delete>
+	
+	<delete id="deletePbslTagInOut">
+	<![CDATA[
+	DELETE FROM TB_RT_PBS_TAG_INOUT
+	]]>
+	</delete>
+	
+	<update id="mergePbslTagInOut">
+	/* VccDao."mergePbslTagInOut" */
+	<![CDATA[
+	MERGE INTO TB_RT_PBS_TAG_INOUT MT
+	USING (
+	   SELECT
+	      #{TAG_ID} AS TAG_ID
+	      , #{PROC_CD} AS PROC_CD
+	   FROM DUAL
+	) Z
+	ON (MT.TAG_ID = Z.TAG_ID)
+	WHEN MATCHED THEN
+	   UPDATE SET
+	      MT.PROC_CD = Z.PROC_CD
+	      , MT.UPD_DT = SYSDATE
+	WHEN NOT MATCHED THEN
+	   INSERT (
+	      TAG_ID
+	      , PROC_CD
+	      , REG_DT
+	   )
+	   VALUES
+	   (
+	      Z.TAG_ID
+	      , Z.PROC_CD
+	      , SYSDATE
+	   )
+	]]>
+	</update>
+</mapper>

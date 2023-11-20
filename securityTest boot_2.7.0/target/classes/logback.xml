@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration scan="true" scanPeriod="30 seconds">
+ 
+	<property name="LOG_HOME" value="D:/Log/App" />
+	<property name="LOG_OLD" value="D:/Log/App/old" />
+	<property name="LOG_PATTERN" value="%logger{36} %d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n"/>
+
+	<appender name="INFO_LOG" class="ch.qos.logback.core.rolling.RollingFileAppender">
+		<file>${LOG_HOME}/Hmas_Core_Application.log</file>
+		
+		<!-- <filter class="ch.qos.logback.classic.filter.LevelFilter">
+			<level>INFO</level>
+			<onMatch>ACCEPT</onMatch> 해당 레벨만 기록한다.
+			<onMismatch>DENY</onMismatch> 다른 수준의 레벨은 기록하지 않는다.(상위 레벨도 기록 안함), 상위 수준의 레벨에 대한 기록을 원하면 ACCEPT 로 하면 기록된다.
+		</filter> -->
+		
+		<rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+			<fileNamePattern>${LOG_OLD}/Hmas_Core_Application_Old.%d{yyyy-MM-dd}.%i.log</fileNamePattern>
+			<timeBasedFileNamingAndTriggeringPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP">
+				<maxFileSize>100mb</maxFileSize>
+			</timeBasedFileNamingAndTriggeringPolicy>
+			<maxHistory>30</maxHistory> 
+		</rollingPolicy>
+		<encoder>
+			<pattern>${LOG_PATTERN}</pattern>
+		</encoder>
+	</appender>
+
+	<appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+		<encoder>
+			<pattern>
+				${LOG_PATTERN}
+			</pattern>
+		</encoder>
+	</appender>
+
+	<logger name="com" level="INFO" additivity="false">
+		<appender-ref ref="STDOUT" />
+		<appender-ref ref="INFO_LOG" />
+	</logger>
+	
+	<logger name="org.springframework" level="ERROR" >
+		<appender-ref ref="STDOUT" />
+		<appender-ref ref="INFO_LOG" />
+	</logger>
+	
+	<root level="ERROR">
+		<appender-ref ref="STDOUT" />
+		<appender-ref ref="INFO_LOG" /> 
+	</root>
+</configuration>

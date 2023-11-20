@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper 
+	PUBLIC "-//mybatis.org//DTDMapper3.0//EN" 
+		   "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.module.dao.BrakeDao">
+	<insert id="insertTbRcBrakeModuleRslt">
+	<![CDATA[
+	INSERT INTO TB_IF_BRAKE_MODULE_RSLT 
+	(
+		BRAKE_MODULE_SEQ
+		, SERIAL_NUMBER
+		, ALC_CODE
+		, TOTAL_STATUS
+		, STATUS_DT
+		, RECEIVE_BYTES
+		, MSG_RSLT
+		, REG_DT
+	) 
+	values 
+	(
+		SQ_BRAKE_MODULE.NEXTVAL
+		, #{SERIAL_NUMBER}
+		, #{ALC_CODE}
+		, #{TOTAL_STATUS}
+		, #{STATUS_DT}
+		, #{RECEIVE_BYTES}
+		, #{MSG_RSLT}
+		, SYSDATE
+	)
+	]]>
+	</insert>
+	
+	<select id="selectTbRcBrakeModuleTotalStatus" resultType="com.spas.module.socket.utility.CMap">
+	<![CDATA[
+	SELECT
+		BRAKE_MODULE_SEQ
+		, SERIAL_NUMBER
+		, ALC_CODE
+		, TOTAL_STATUS
+		, STATUS_DT
+	FROM TB_IF_BRAKE_MODULE_RSLT
+	WHERE BRAKE_MODULE_SEQ = (
+		SELECT
+			MIN(BRAKE_MODULE_SEQ) AS BRAKE_MODULE_SEQ
+		FROM TB_IF_BRAKE_MODULE_RSLT
+		WHERE MSG_RSLT IS NULL
+	)
+	]]>
+	</select>
+	
+	<update id="updateTbRcBrakeModuleRslt">
+	<![CDATA[
+	UPDATE TB_IF_BRAKE_MODULE_RSLT SET
+		MSG_RSLT = #{MSG_RSLT}
+		, UPD_DT = SYSDATE
+	WHERE SERIAL_NUMBER = #{SERIAL_NUMBER}
+	AND ALC_CODE = #{ALC_CODE}
+	AND TOTAL_STATUS = #{TOTAL_STATUS}
+	AND STATUS_DT = #{STATUS_DT}
+	]]>
+	</update>
+	
+	<update id="updateTbRcBrakeModuleBodyNo">
+	<![CDATA[
+	UPDATE TB_IF_BRAKE_MODULE_RSLT SET
+		BODY_NO = #{BODY_NO}
+		, UPD_DT = SYSDATE
+	WHERE SERIAL_NUMBER = #{SERIAL_NUMBER}
+	AND ALC_CODE = #{ALC_CODE}
+	]]>
+	</update>
+	
+	
+	<select id="selectMesSendData" resultType="com.spas.module.socket.utility.CMap">
+	<![CDATA[
+	SELECT
+		SERIAL_NUMBER
+		, ALC_CODE
+		, BODY_NO
+		, TOTAL_STATUS
+		, STATUS_DT
+		, RECEIVE_BYTES
+		, MSG_RSLT
+	FROM TB_IF_BRAKE_MODULE_RSLT
+	WHERE SERIAL_NUMBER = #{SERIAL_NUMBER}
+	AND ALC_CODE = #{ALC_CODE}
+	]]>
+	</select>
+</mapper>

@@ -1,0 +1,171 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper 
+	PUBLIC "-//mybatis.org//DTDMapper3.0//EN" 
+		   "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.module.dao.MesDao">
+	
+	<select id="selectIfMesProd" resultType="com.spas.module.socket.utility.CMap">
+	<![CDATA[
+	SELECT
+		MES_PROD_SEQ
+		, PLNT_CD
+		, LINE_DIV
+		, PROD_DATE
+		, DP_CMT
+		, CAR_CD
+		, BODY_NO
+		, VIN_CODE
+		, ORDER_NO
+		, INNER_COLOR
+		, BODY_COLOR
+		, REGION_NAME
+		, CODE_219
+		, U_PART
+		, C_PART
+		, P_PART
+		, Q_PART
+		, EMPTY_CAR_YN
+		, LEAVE_DIV
+	FROM TB_IF_MES_PROD
+	WHERE BODY_NO = #{BODY_NO}
+	AND MES_PROD_SEQ = (
+		SELECT
+			MAX(MES_PROD_SEQ)
+		FROM TB_IF_MES_PROD
+		WHERE BODY_NO = #{BODY_NO}
+	)
+	]]>
+	</select>
+	
+	<select id="selectIfMesProdSeq" resultType="com.spas.module.socket.utility.CMap">
+	<![CDATA[
+	SELECT
+		MES_PROD_SEQ
+		, PLNT_CD
+		, LINE_DIV
+		, PROD_DATE
+		, DP_CMT
+		, CAR_CD
+		, BODY_NO
+		, VIN_CODE
+		, ORDER_NO
+		, INNER_COLOR
+		, BODY_COLOR
+		, REGION_NAME
+		, CODE_219
+		, U_PART
+		, C_PART
+		, P_PART
+		, Q_PART
+		, EMPTY_CAR_YN
+		, LEAVE_DIV
+	FROM TB_IF_MES_PROD
+	WHERE MES_PROD_SEQ = #{MAX_MES_PROD_SEQ}
+	]]>
+	</select>
+	
+	<select id="selectRcReportData" resultType="com.spas.module.socket.utility.CMap">
+	<![CDATA[
+	SELECT
+		TAG_ID
+	FROM TB_RC_PROC_REPORT
+	WHERE REPORT_SEQ = (
+		SELECT
+			MAX(REPORT_SEQ)
+		FROM TB_RC_PROC_REPORT
+		WHERE PROC_CD = #{PROC_CD}
+		AND BODY_NO = #{BODY_NO}
+	)
+	]]>
+	</select>
+	
+	<select id="selectMaxRcReportData" resultType="com.spas.module.socket.utility.CMap">
+	<![CDATA[
+	SELECT
+		TAG_ID
+	FROM TB_RC_PROC_REPORT
+	WHERE REPORT_SEQ = (
+		SELECT
+			MAX(REPORT_SEQ)
+		FROM TB_RC_PROC_REPORT
+		WHERE PROC_CD = #{PROC_CD}
+		AND BODY_NO = #{BODY_NO}
+	)
+	]]>
+	</select>
+	
+	<insert id="insertTbIfMesProd">
+	<![CDATA[
+	insert into TB_IF_MES_PROD 
+	(
+		MES_PROD_SEQ
+		, PLNT_CD
+		, LINE_DIV
+		, PROD_DATE
+		, DP_CMT
+		, CAR_CD
+		, BODY_NO
+		, VIN_CODE
+		, ORDER_NO
+		, INNER_COLOR
+		, BODY_COLOR
+		, REGION_NAME
+		, CODE_219
+		, U_PART
+		, C_PART
+		, P_PART
+		, Q_PART
+		, REG_DT
+		, EMPTY_CAR_YN
+		, LEAVE_DIV
+	) 
+	values 
+	(
+		TO_NUMBER(CONCAT(TO_CHAR(SYSDATE, 'YYYYMMDD'), RPAD(LPAD(SQ_IF_MES_PROD.NEXTVAL, 6,'0'), 9, '0')))
+		, #{PLNT_CD}
+		, #{LINE_DIV}
+		, #{PROD_DATE}
+		, #{DP_CMT}
+		, #{CAR_CD}
+		, #{BODY_NO}
+		, #{VIN_CODE}
+		, #{ORDER_NO}
+		, #{INNER_COLOR}
+		, #{BODY_COLOR}
+		, #{REGION_NAME}
+		, #{CODE_219}
+		, #{U_PART}
+		, #{C_PART}
+		, #{P_PART}
+		, #{Q_PART}
+		, SYSDATE
+		, 'N'
+		, #{LEAVE_DIV}
+	)
+	]]>
+	</insert>
+	
+	<insert id="deleteRcProcReportBody">
+	<![CDATA[
+	DELETE FROM TB_RC_PROC_REPORT
+	WHERE BODY_NO = #{BODY_NO}
+	]]>
+	</insert>
+	
+	<insert id="deleteRcProcProcInoutBody">
+	<![CDATA[
+	DELETE FROM TB_RC_PROC_INOUT
+	WHERE BODY_NO = #{BODY_NO}
+	]]>
+	</insert>
+	
+	<select id="selectTbBiCarCd" resultType="com.spas.module.socket.utility.CMap">
+	<![CDATA[
+	SELECT
+		CAR_CD
+		, BCR_NO
+	FROM TB_BI_CAR
+	WHERE CAR_CD LIKE '%' ||  #{CAR_CD_TOO} || '%'
+	]]>
+	</select>
+</mapper>

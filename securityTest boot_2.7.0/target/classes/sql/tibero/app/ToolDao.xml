@@ -1,0 +1,173 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper 
+	PUBLIC "-//mybatis.org//DTDMapper3.0//EN" 
+		   "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.module.dao.ToolDao">
+
+	<insert id="insertTbIfToolRslt">
+	<![CDATA[
+	INSERT INTO TB_IF_TOOL_RSLT 
+	(
+		TOOL_RSLT_SEQ
+		, CELL_ID
+		, CHANNEL_ID
+		, TOOL_NM
+		, VIN_NO
+		, JOB_NO
+		, PSET_NO
+		, BATCH_SIZE
+		, BATCH_CNT
+		, TIGHTENING_STAT
+		, TORQUE_STAT
+		, ANGLE_STAT
+		, TORQUE_MIN
+		, TORQUE_MAX
+		, TORQUE_FINAL_TARGET
+		, TORQUE
+		, ANGLE_MIN
+		, ANGLE_MAX
+		, FINAL_ANGLE_TARGET
+		, ANGLE
+		, TIME_STAMP
+		, PSET_CHANGE_DT
+		, BATCH_STAT
+		, TIGHTENING_ID
+		, IF_DT
+		, TOOL_ID
+		, TOTAL_BYTES
+		, BODY_NO
+		, MES_PROD_SEQ
+	) 
+	values 
+	(
+		SQ_IF_TOOL_RSLT.NEXTVAL
+		, #{CELL_ID}
+		, #{CHANNEL_ID}
+		, #{TOOL_NM}
+		, #{VIN_NO}
+		, #{JOB_NO}
+		, #{PSET_NO}
+		, #{BATCH_SIZE}
+		, #{BATCH_CNT}
+		, #{TIGHTENING_STAT}
+		, #{TORQUE_STAT}
+		, #{ANGLE_STAT}
+		, #{TORQUE_MIN}
+		, #{TORQUE_MAX}
+		, #{TORQUE_FINAL_TARGET}
+		, #{TORQUE}
+		, #{ANGLE_MIN}
+		, #{ANGLE_MAX}
+		, #{FINAL_ANGLE_TARGET}
+		, #{ANGLE}
+		, #{TIME_STAMP}
+		, #{PSET_CHANGE_DT}
+		, #{BATCH_STAT}
+		, #{TIGHTENING_ID}
+		, SYSDATE
+		, #{TOOL_ID}
+		, #{TOTAL_BYTES_STR}
+		, #{BODY_NO}
+		, (SELECT MES_PROD_SEQ FROM TB_IF_MES_PROD WHERE BODY_NO = #{BODY_NO})
+	)
+	]]>
+	</insert>
+	
+	<insert id="insertMesSendData">
+	<![CDATA[
+	insert into TB_RC_MES_TOOL_RSLT_SEND 
+	(
+		RSLT_SEND_SEQ
+		, SK_ID
+		, BODY_NO
+		, SEND_BYTES
+		, SEND_COUNT
+		, REG_DT
+	) values 
+	(
+		SQ_RC_MES_TOOL_RSLT_SEND.NEXTVAL
+		, #{SK_ID}
+		, #{BODY_NO}
+		, #{SEND_BYTES}
+		, 0
+		, SYSDATE
+	)
+	]]>
+	</insert>
+	
+	<select id="selectToolInOut" resultType="com.spas.module.socket.utility.CMap">
+	<![CDATA[
+	SELECT
+		A.INOUT_SEQ
+		, A.TOOL_ID
+		, A.PROC_CD
+		, A.MES_PROD_SEQ
+		, A.BODY_NO
+		, A.TAG_ID
+		, A.INOUT_TY
+	FROM (
+		SELECT
+			INOUT_SEQ
+			, TOOL_ID
+			, PROC_CD
+			, MES_PROD_SEQ
+			, BODY_NO
+			, TAG_ID
+			, INOUT_TY
+		FROM TB_RC_TOOL_INOUT
+		WHERE TOOL_ID = #{TOOL_ID}
+		AND INOUT_TY = 'IN'
+	)A, (
+		SELECT
+			MAX(INOUT_SEQ) AS MAX_INOUT_SEQ
+			, TOOL_ID
+		FROM TB_RC_TOOL_INOUT
+		WHERE TOOL_ID = #{TOOL_ID}
+		AND INOUT_TY = 'IN'
+		GROUP BY TOOL_ID
+	)B
+	WHERE A.TOOL_ID = B.TOOL_ID
+	AND A.INOUT_SEQ = B.MAX_INOUT_SEQ
+	]]>
+	</select>
+	
+	<select id="selectTestData" resultType="com.spas.module.socket.utility.CMap">
+	<![CDATA[
+	SELECT
+	*
+	FROM (
+		SELECT 
+			RSLT_SEND_SEQ
+			, SK_ID
+			, SEND_BYTES
+			, SEND_COUNT
+			, MSG_RSLT
+			, BODY_NO
+			, ROW_NUMBER() OVER (ORDER BY RSLT_SEND_SEQ ASC) AS RNUM
+		FROM TB_RC_MES_TOOL_RSLT_SEND
+		WHERE SEND_COUNT < 3
+		AND (MSG_RSLT IS NULL
+		OR MSG_RSLT = 'R')
+	)
+	WHERE RNUM <= 20
+	]]>
+	</select>
+	
+	<update id="updateTestData">
+	<![CDATA[
+	UPDATE TB_RC_MES_TOOL_RSLT_SEND SET
+		SEND_COUNT = #{SEND_COUNT}
+		, MSG_RSLT = #{MSG_RSLT}
+	WHERE RSLT_SEND_SEQ = #{RSLT_SEND_SEQ}
+	]]>
+	</update>
+	
+	<update id="updateTestAckData">
+	<![CDATA[
+	UPDATE TB_RC_MES_TOOL_RSLT_SEND SET
+		MSG_RSLT = #{MSG_RSLT}
+		, UPD_DT = SYSDATE
+	WHERE RSLT_SEND_SEQ = #{RSLT_SEND_SEQ}
+	]]>
+	</update>
+</mapper>

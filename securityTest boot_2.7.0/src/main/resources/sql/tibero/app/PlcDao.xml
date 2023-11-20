@@ -1,0 +1,329 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper 
+	PUBLIC "-//mybatis.org//DTDMapper3.0//EN" 
+		   "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.module.dao.PlcDao">
+	
+	<update id="mergeTbRtPlcData">
+	<![CDATA[
+	MERGE INTO TB_RT_PLC_DATA  A
+		USING (
+			SELECT 
+				#{PLC_DIV} AS PLC_DIV
+				, #{PLC_DATA} AS PLC_DATA
+			FROM DUAL
+		) B
+		ON (
+			A.PLC_DIV = B.PLC_DIV
+		)
+	WHEN MATCHED THEN
+		UPDATE SET
+			A.PLC_DATA = B.PLC_DATA
+			, A.UPD_DT = SYSDATE
+	WHEN NOT MATCHED THEN
+		INSERT (
+			PLC_DIV
+			, PLC_DATA
+			, REG_DT
+		)
+		VALUES (
+			B.PLC_DIV
+			, B.PLC_DATA
+			, SYSDATE
+		)
+	]]>
+	</update>
+	
+	<insert id="insertTbRcPlcData">
+	<![CDATA[
+	insert into TB_RC_PLC_DATA 
+	(
+		PLC_DATA_SEQ
+		, PLC_DIV
+		, PLC_DATA
+		, REG_DT
+	) values 
+	(
+		SQ_RC_PLC_DATA.NEXTVAL
+		, #{PLC_DIV}
+		, #{PLC_DATA}
+		, SYSDATE
+	)
+	]]>
+	</insert>
+	
+	<insert id="insertPbsReportBody">
+	<![CDATA[
+	insert into TB_RT_PROC_REPORT
+	(
+		MES_PROD_SEQ
+		, TAG_ID
+		, BODY_NO
+		, VIN_NO
+		, PROC_CD
+		, ERROR_FLAG
+		, REG_DT
+	) 
+	values 
+	(
+		#{MES_PROD_SEQ}
+		, #{TAG_ID}
+		, #{BODY_NO}
+		, #{VIN_NO}
+		, #{PROC_CD}
+		, #{ERROR_FLAG}
+		, SYSDATE
+	)
+	]]>
+	</insert>
+	
+	<select id="selectPbsReportBody" resultType="com.spas.module.socket.utility.CMap">
+	<![CDATA[
+	SELECT
+		MES_PROD_SEQ
+		, TAG_ID
+		, BODY_NO
+		, VIN_NO
+		, PROC_CD
+		, ERROR_FLAG
+		, REPORT_FLAG
+		, PLC_BODY_NO
+		, EMP_IDX
+		, TO_CHAR(REG_DT, 'yyyy/MM/dd HH24:mi:ss') AS REG_DT
+	FROM TB_RT_PROC_REPORT
+	WHERE PROC_CD = #{PROC_CD}
+	]]>
+	</select>
+	
+	<select id="selectCsReportBody" resultType="com.spas.module.socket.utility.CMap">
+	<![CDATA[
+	SELECT
+		MES_PROD_SEQ
+		, TAG_ID
+		, BODY_NO
+		, VIN_NO
+		, PROC_CD
+		, ERROR_FLAG
+		, REPORT_FLAG
+		, PLC_BODY_NO
+		, EMP_IDX
+		, TO_CHAR(REG_DT, 'yyyy/MM/dd HH24:mi:ss') AS REG_DT
+	FROM TB_RT_PROC_REPORT
+	WHERE MES_PROD_SEQ = #{MES_PROD_SEQ}
+	AND PROC_CD NOT IN ('T000', 'P400', 'P390')
+	]]>
+	</select>
+	
+	<select id="selectReportTargetBody" resultType="com.spas.module.socket.utility.CMap">
+	<![CDATA[
+	SELECT
+		MES_PROD_SEQ
+		, BODY_NO
+		, TAG_ID
+		, PROC_CD
+		, INOUT_TY
+	FROM TB_RC_PROC_INOUT
+	WHERE INOUT_SEQ = (
+		SELECT
+			MAX(INOUT_SEQ)
+		FROM TB_RC_PROC_INOUT
+		WHERE PROC_CD = #{PROC_CD}
+		AND INOUT_TY = 'IN'
+		AND BODY_NO = #{BODY_NO}
+	)
+	]]>
+	</select>
+	
+	<select id="selectEmpIdxMap" resultType="com.spas.module.socket.utility.CMap">
+	<![CDATA[
+	SELECT
+	*
+	FROM TB_RT_PROC_REPORT
+	WHERE REG_DT = (
+		SELECT
+		MAX(REG_DT)
+		FROM TB_RT_PROC_REPORT
+		WHERE EMP_IDX = #{EMP_IDX}
+	)
+	]]>
+	</select>
+	
+	<select id="selectBodyReportMap" resultType="com.spas.module.socket.utility.CMap">
+	<![CDATA[
+	SELECT
+		*
+	FROM TB_RT_PROC_REPORT
+	WHERE BODY_NO = #{BODY_NO}
+	AND PROC_CD NOT IN('T000', 'P390', 'P400')
+	]]>
+	</select>
+	
+		
+	<select id="selectEmpIdx" resultType="com.spas.module.socket.utility.CMap">
+	<![CDATA[
+	SELECT
+		SQ_EMP_IDX.NEXTVAL AS EMP_IDX
+	FROM DUAL
+	]]>
+	</select>
+	
+	<delete id="deletePbsReportBody">
+	<![CDATA[
+	DELETE FROM TB_RT_PROC_REPORT
+	WHERE PROC_CD = #{PROC_CD}
+	]]>
+	</delete>
+	
+	<delete id="deletePlcOutBody">
+	<![CDATA[
+	DELETE FROM TB_RT_PROC_REPORT
+	AND BODY_NO = #{BODY_NO}
+	]]>
+	</delete>
+	
+	<update id="mergePbsReportBody">
+	<![CDATA[
+	MERGE INTO TB_RT_PROC_REPORT  A
+		USING (
+			SELECT 
+				#{MES_PROD_SEQ} AS MES_PROD_SEQ
+				, #{TAG_ID} AS TAG_ID
+				, #{BODY_NO} AS BODY_NO
+				, #{VIN_NO} AS VIN_NO
+				, #{PROC_CD} AS PROC_CD
+				, #{ERROR_FLAG} AS ERROR_FLAG
+				, #{REPORT_FLAG} AS REPORT_FLAG
+				, #{EMP_IDX} AS EMP_IDX
+				, #{PLC_BODY_NO} AS PLC_BODY_NO
+			FROM DUAL
+		) B
+		ON (
+			A.PROC_CD = B.PROC_CD
+		)
+	WHEN MATCHED THEN
+		UPDATE SET
+			A.MES_PROD_SEQ = B.MES_PROD_SEQ
+			, A.TAG_ID = B.TAG_ID
+			, A.BODY_NO = B.BODY_NO
+			, A.VIN_NO = B.VIN_NO
+			, A.ERROR_FLAG = B.ERROR_FLAG
+			, A.REPORT_FLAG = B.REPORT_FLAG
+			, A.UPD_DT = SYSDATE
+			, A.EMP_IDX = B.EMP_IDX
+			, A.PLC_BODY_NO = B.PLC_BODY_NO
+	WHEN NOT MATCHED THEN
+		INSERT (
+			MES_PROD_SEQ
+			, TAG_ID
+			, BODY_NO
+			, VIN_NO
+			, PROC_CD
+			, ERROR_FLAG
+			, REPORT_FLAG
+			, EMP_IDX
+			, PLC_BODY_NO
+			, REG_DT
+		)
+		VALUES (
+			B.MES_PROD_SEQ
+			, B.TAG_ID
+			, B.BODY_NO
+			, B.VIN_NO
+			, B.PROC_CD
+			, B.ERROR_FLAG
+			, B.REPORT_FLAG
+			, B.EMP_IDX
+			, B.PLC_BODY_NO
+			, SYSDATE
+		)
+	]]>
+	</update>
+	
+	<update id="updateEmpIdxCsProc">
+	<![CDATA[
+	UPDATE TB_RT_PROC_REPORT SET
+		BODY_NO = #{BODY_NO}
+		, MES_PROD_SEQ = #{MES_PROD_SEQ}
+		, TAG_ID = #{TAG_ID}
+		, EMP_IDX = NULL
+		, ERROR_FLAG = #{ERROR_FLAG}
+		, REPORT_FLAG = #{REPORT_FLAG}
+		, UPD_DT = SYSDATE
+	WHERE PROC_CD NOT IN ('P390', 'P400', 'T000')
+	AND EMP_IDX = #{EMP_IDX}
+	]]>
+	</update>
+	
+	<update id="updateMesSeqCsProc">
+	<![CDATA[
+	UPDATE TB_RT_PROC_REPORT SET
+		BODY_NO = #{BODY_NO}
+		, MES_PROD_SEQ = #{MES_PROD_SEQ}
+		, TAG_ID = #{TAG_ID}
+		, EMP_IDX = NULL
+		, ERROR_FLAG = #{ERROR_FLAG}
+		, REPORT_FLAG = #{REPORT_FLAG}
+		, UPD_DT = SYSDATE
+	WHERE PROC_CD NOT IN ('P390', 'P400', 'T000')
+	AND MES_PROD_SEQ = #{MES_PROD_SEQ}
+	]]>
+	</update>
+	
+	<update id="updatePbsReportBodyFlag">
+	<![CDATA[
+	UPDATE TB_RT_PROC_REPORT SET REPORT_FLAG = #{REPORT_FLAG}
+	WHERE BODY_NO = #{BODY_NO}
+	AND PROC_CD = #{PROC_CD}
+	]]>
+	</update>
+	
+	<update id="updateCsReportBodyFlag">
+	<![CDATA[
+	UPDATE TB_RT_PROC_REPORT SET REPORT_FLAG = #{REPORT_FLAG}
+	WHERE BODY_NO = #{BODY_NO}
+	AND PROC_CD NOT IN ('T000', 'P400', 'P390')
+	]]>
+	</update>
+	
+	<update id="updateMesSeqReportBodyFlag">
+	<![CDATA[
+	UPDATE TB_RT_PROC_REPORT SET REPORT_FLAG = #{REPORT_FLAG}
+	WHERE MES_PROD_SEQ = #{MES_PROD_SEQ}
+	AND PROC_CD NOT IN ('T000', 'P400', 'P390')
+	]]>
+	</update>
+	
+	<update id="updateTbBiLineActiveYn">
+	<![CDATA[
+	UPDATE TB_BI_LINE SET ACTIVE_YN = #{ACTIVE_YN}
+	WHERE LINE_CD = #{LINE_CD}
+	]]>
+	</update>
+	
+	<insert id="insertTbRcPrcoReport">
+	<![CDATA[
+	insert into TB_RC_PROC_REPORT 
+	(
+		REPORT_SEQ
+		, TAG_ID
+		, BODY_NO
+		, PROC_CD
+		, ERROR_FLAG
+		, REPORT_FLAG
+		, PLC_BODY_NO
+		, REG_DT
+	) 
+	values 
+	(
+		SQ_RC_REPORT.NEXTVAL
+		, #{TAG_ID}
+		, #{BODY_NO}
+		, #{PROC_CD}
+		, #{ERROR_FLAG}
+		, #{REPORT_FLAG}
+		, #{PLC_BODY_NO}
+		, SYSDATE
+	)
+	]]>
+	</insert>
+</mapper>

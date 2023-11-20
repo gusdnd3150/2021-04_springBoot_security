@@ -1,0 +1,127 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper 
+	PUBLIC "-//mybatis.org//DTDMapper3.0//EN" 
+		   "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.module.dao.PbsDao">
+	<select id="selectSqMesProdPbs" resultType="com.spas.module.socket.utility.CMap">
+	<![CDATA[
+	SELECT
+		SQ_IF_MES_PROD_PBS.NEXTVAL as MES_PROD_SEQ
+	FROM DUAL
+	]]>
+	</select>
+	
+	<select id="selectCsReport" resultType="com.spas.module.socket.utility.CMap">
+	<![CDATA[
+	SELECT
+		A.MES_PROD_SEQ
+		, A.TAG_ID AS REPORT_TAG_ID
+		, B.TAG_ID
+		, A.BODY_NO
+		, A.VIN_NO
+		, A.PROC_CD
+		, A.PROC_CD as PROC_CD_DT
+		, A.ERROR_FLAG
+		, A.REPORT_FLAG
+		, B.MAC_ADDR
+		, A.EMP_IDX
+		, B.BATTERY_LEVEL
+		, A.PLC_BODY_NO
+	FROM (
+		SELECT
+			MES_PROD_SEQ
+			, TAG_ID
+			, BODY_NO
+			, VIN_NO
+			, PROC_CD
+			, ERROR_FLAG
+			, REPORT_FLAG
+			, PLC_BODY_NO
+			, EMP_IDX
+		FROM TB_RT_PROC_REPORT
+		WHERE PROC_CD IN ('PBSL30', 'PRE_OUT', 'BE_RP', 'PBSL31', 'PBSLMP', 'BE_OU', 'PBSLOU', 'PBSL32')
+	)A LEFT OUTER JOIN (
+		SELECT
+			X.TAG_ID
+			, X.MAC_ADDR
+			, Y.BATTERY_LEVEL
+		FROM (
+			SELECT
+				TAG_ID
+				, MAC_ADDR
+			FROM TB_BI_TAG
+		)X, (
+			SELECT
+				TAG_ID
+				, BATTERY_LEVEL
+			FROM TB_RT_TAG_STAT
+		)Y
+		WHERE X.TAG_ID = Y.TAG_ID
+	)B
+	ON(A.TAG_ID = B.MAC_ADDR)
+	]]>
+	</select>
+	
+	<select id="selectPbsPlcStat" resultType="com.spas.module.socket.utility.CMap">
+	<![CDATA[
+	SELECT
+		*
+	FROM (
+		SELECT
+			TO_CHAR(UPD_DT, 'yyyy/MM/dd HH24:mi:ss') AS HEART_BIT
+		FROM TB_RT_PLC_DATA
+		WHERE PLC_DIV = 'HEART_BIT'
+	)A, (
+		SELECT
+			TO_CHAR(UPD_DT, 'yyyy/MM/dd HH24:mi:ss') AS PRE_BODY_NO
+		FROM TB_RT_PLC_DATA
+		WHERE PLC_DIV = 'PRE_BODY_NO'
+	)B
+	]]>
+	</select>
+	
+	<select id="selectListLeaveList" resultType="com.spas.module.socket.utility.CMap">
+	<![CDATA[
+	SELECT
+		BODY_NO
+		, REG_DT
+	FROM TB_IF_MES_PROD
+	WHERE TRIM(LEAVE_DIV) = 'UNLOAD'
+	AND REG_DT >= SYSDATE -30
+	]]>
+	</select>
+	
+	<insert id="insertTbRcExp">
+	<![CDATA[
+	INSERT INTO TB_RC_EXP 
+	(
+	EXP_SEQ
+	, MES_PROD_SEQ
+	, TAG_ID
+	, BODY_NO
+	, REG_DT
+	) 
+	VALUES 
+	(
+	SQ_EXP_SEQ.NEXTVAL
+	, #{MES_PROD_SEQ}
+	, #{TAG_ID}
+	, #{BODY_NO}
+	, SYSDATE
+	)
+	]]>
+	</insert>
+	
+	<select id="selectTbRcExp" resultType="com.spas.module.socket.utility.CMap">
+	<![CDATA[
+	SELECT
+		EXP_SEQ
+		, MES_PROD_SEQ
+		, TAG_ID
+		, BODY_NO
+		, REG_DT
+	FROM TB_RC_EXP
+	WHERE REG_DT >= SYSDATE-90
+	]]>
+	</select>
+</mapper>
