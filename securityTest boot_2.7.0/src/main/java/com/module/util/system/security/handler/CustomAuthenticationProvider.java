@@ -46,7 +46,7 @@ public class CustomAuthenticationProvider implements AuthenticationProvider {
 
     @Override
     public Authentication authenticate(Authentication authentication) throws AuthenticationException {
-    	logger.debug("2.CustomAuthenticationProvider");
+    	logger.info("2.CustomAuthenticationProvider");
 
         UsernamePasswordAuthenticationToken token = (UsernamePasswordAuthenticationToken) authentication;
 
@@ -57,9 +57,12 @@ public class CustomAuthenticationProvider implements AuthenticationProvider {
         // Spring Security - UserDetailsService를 통해 DB에서 아이디로 사용자 조회
         UserVo userDetailsDto = (UserVo) userService.loadUserByUsername(userId);
 
+        logger.info("CustomAuthenticationProvider - authenticate ::"+userDetailsDto);
         if (!(userDetailsDto.getPassword().equalsIgnoreCase(userPw) && userDetailsDto.getPassword().equalsIgnoreCase(userPw))) {
+        	logger.info("CustomAuthenticationProvider - authenticate mimated ::");
             throw new BadCredentialsException(userDetailsDto.getUsername() + "Invalid password");
         }
+        logger.info("CustomAuthenticationProvider - authenticate success ::");
         return new UsernamePasswordAuthenticationToken(userDetailsDto, userPw, userDetailsDto.getAuthorities());
     }
 

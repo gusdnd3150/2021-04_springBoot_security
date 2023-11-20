@@ -82,11 +82,13 @@ public class JwtAuthorizationFilter extends OncePerRequestFilter {
                 // version 222222222222
                 if (TokenUtils.isValidToken(token)) {
                 	logger.info("TokenUtils.isValidToken(token) ----"+TokenUtils.isValidToken(token));
+                	
                     Authentication authentication = TokenUtils.getAuthentication(token);
                     SecurityContextHolder.getContext().setAuthentication(authentication);
+                    
                     logger.info("Security Context에 '{}' 인증 정보를 저장했습니다, uri: {}", authentication.getName(), requestURI);
                 } else {
-                    logger.info("유효한 JWT 토큰이 없습니다, uri: {}", requestURI);
+                    logger.info("JWT token is not valid", requestURI);
                 }
                 chain.doFilter(request, response);
 

@@ -52,8 +52,6 @@ public class TestCntroller {
      */
     @PostMapping("/loginProcess")
     public String login(@RequestBody UserVo user) {
-    	logger.info("ttttttttttttttt"+user.getPassword());
-    	logger.info("ttttttttttttttt"+user.getUsername());
     	//String token =userService.login(user);
 
     	UsernamePasswordAuthenticationToken authenticationToken =

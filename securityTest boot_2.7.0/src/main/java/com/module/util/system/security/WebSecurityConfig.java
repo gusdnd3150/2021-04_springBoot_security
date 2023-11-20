@@ -1,8 +1,10 @@
 package com.module.util.system.security;
 
 import com.module.util.system.security.filter.CustomAuthenticationFilter;
+
 import com.module.util.system.security.filter.JwtAuthorizationFilter;
-import com.module.util.system.security.handler.AccessDeniedHandler;
+import com.module.util.system.security.handler.AccessDeniedHandlerImpl;
+import com.module.util.system.security.handler.AuthenticationEntryPointImpl;
 import com.module.util.system.security.handler.CustomAuthFailureHandler;
 import com.module.util.system.security.handler.CustomAuthSuccessHandler;
 import com.module.util.system.security.handler.CustomAuthenticationProvider;
@@ -17,9 +19,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.security.servlet.PathRequest;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.ProviderManager;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.builders.WebSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityCustomizer;
 import org.springframework.security.config.http.SessionCreationPolicy;
@@ -27,6 +31,9 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.authentication.www.BasicAuthenticationFilter;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 /**
  * Spring Security 환경 설정을 구성하기 위한 클래스입니다.
@@ -37,7 +44,21 @@ import org.springframework.security.web.authentication.www.BasicAuthenticationFi
 public class WebSecurityConfig {
 	
 	private static final Logger logger = LoggerFactory.getLogger(WebSecurityConfig.class);
+	
+	
+	final String[] GET_WHITELIST = new String[]{
+            "/loginProcess",
+            "/login",
+            "/user/login-id/**",
+            "/user/email/**",
+            "/affiliate"
+    };
 
+    final String[] POST_WHITELIST = new String[]{
+            "/client-user",
+            "/loginProcess"
+    };
+    
     /**
      * 1. 정적 자원(Resource)에 대해서 인증된 사용자가  정적 자원의 접근에 대해 ‘인가’에 대한 설정을 담당하는 메서드이다.
      *
@@ -59,33 +80,28 @@ public class WebSecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         logger.debug("[+] WebSecurityConfig Start !!! ");
+        http
+        .cors()
+        .and()
+        .csrf().disable()
+        .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+        .and().exceptionHandling()
+        .authenticationEntryPoint(authenticationEntryPointHandler()) // 인증 실패
+        .accessDeniedHandler(accessDeniedHandler()) // 인가 실패
+        .and().authorizeRequests()
+        .antMatchers(HttpMethod.GET, GET_WHITELIST).permitAll() // 해당 GET URL은 모두 허용
+        .antMatchers(HttpMethod.POST, POST_WHITELIST).permitAll() // 해당 POST URL은 모두 허용
+        .antMatchers("/client-user/**").hasAnyRole("ADMIN") // 권한 적용
+        .anyRequest().authenticated() // 나머지 요청에 대해서는 인증을 요구
+        .and() // 로그인하는 경우에 대해 설정함
+        .formLogin().disable() // 로그인 페이지 사용 안함
+//        //.loginPage("/login") // 로그인 성공 URL을 설정함
+//        .successForwardUrl("/index") // 로그인 실패 URL을 설정함
+//        .failureForwardUrl("/index").permitAll()
+//        .and()
+        .addFilterBefore(customAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class)
+        .addFilterBefore(jwtAuthorizationFilter(), UsernamePasswordAuthenticationFilter.class);
         
-        // [STEP6] Spring Security JWT Filter Load
-        http.addFilterBefore(jwtAuthorizationFilter(), UsernamePasswordAuthenticationFilter.class);
-        // [STEP1] 서버에 인증정보를 저장하지 않기에 csrf를 사용하지 않는다.
-        http.csrf().disable();
-
-        // [STEP2] form 기반의 로그인에 대해 비 활성화하며 커스텀으로 구성한 필터를 사용한다.
-        http.formLogin().disable();
-
-        // [STEP3] 토큰을 활용하는 경우 모든 요청에 대해 '인가'에 대해서 사용.
-        //http.authorizeHttpRequests((authz) -> authz.anyRequest().permitAll());
-        
-        http.authorizeRequests()
-	        .antMatchers("/admin/**").hasRole("ADMIN")
-	        .antMatchers("/user/**").hasRole("ROLE_USER")
-	        .antMatchers("/login").permitAll()
-	        .and()
-	        //.exceptionHandling().accessDeniedHandler(accessDeniedHandler())
-	    ;
-
-        // [STEP4] Spring Security Custom Filter Load - Form '인증'에 대해서 사용
-        //http.addFilterBefore(customAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class);
-
-        // [STEP5] Session 기반의 인증기반을 사용하지 않고 추후 JWT를 이용하여서 인증 예정
-        http.sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS);
-
-        // [STEP7] 최종 구성한 값을 사용함.
         return http.build();
     }
 
@@ -132,13 +148,26 @@ public class WebSecurityConfig {
     @Bean
     public CustomAuthenticationFilter customAuthenticationFilter() {
         CustomAuthenticationFilter customAuthenticationFilter = new CustomAuthenticationFilter(authenticationManager());
-        customAuthenticationFilter.setFilterProcessesUrl("/loginProccess");     // 접근 URL
+        customAuthenticationFilter.setFilterProcessesUrl("/loginProcess");     // 로그인 처리 url
         customAuthenticationFilter.setAuthenticationSuccessHandler(customLoginSuccessHandler());    // '인증' 성공 시 해당 핸들러로 처리를 전가한다.
         customAuthenticationFilter.setAuthenticationFailureHandler(customLoginFailureHandler());    // '인증' 실패 시 해당 핸들러로 처리를 전가한다.
         customAuthenticationFilter.afterPropertiesSet();
         return customAuthenticationFilter;
     }
     
+    @Bean
+    public CorsConfigurationSource corsConfigurationSource() {
+        CorsConfiguration configuration = new CorsConfiguration();
+        configuration.addAllowedOrigin("http://localhost:8080"); // 허용할 도메인을 추가
+        configuration.addAllowedMethod("*");
+        configuration.addAllowedHeader("*");
+        configuration.setAllowCredentials(true);
+
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration("/**", configuration);
+
+        return source;
+    }
     
 
     /**
@@ -174,8 +203,13 @@ public class WebSecurityConfig {
     
     
     @Bean
-    public AccessDeniedHandler accessDeniedHandler(){
-    	return new  AccessDeniedHandler();
+    public AccessDeniedHandlerImpl accessDeniedHandler(){
+    	return new  AccessDeniedHandlerImpl();
+    }
+    
+    @Bean
+    public AuthenticationEntryPointImpl authenticationEntryPointHandler(){
+    	return new  AuthenticationEntryPointImpl();
     }
 
 

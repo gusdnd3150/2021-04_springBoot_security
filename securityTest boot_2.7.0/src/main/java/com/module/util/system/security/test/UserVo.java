@@ -12,17 +12,33 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+
 /**
  * @author gusdn
  *
  */
 @Component
+@JsonSerialize
 public class  UserVo implements UserDetails{
 
-	/**
-	 * 
-	 */
 	private static final long serialVersionUID = 1L;
+	
+	
+	/**
+	 * @return the userName
+	 */
+	public String getUserName() {
+		return userName;
+	}
+
+	/**
+	 * @return the userPassword
+	 */
+	public String getUserPassword() {
+		return userPassword;
+	}
+
 	private String userName;
 	private String userPassword;
 	private Collection<? extends GrantedAuthority> authorities;
@@ -128,5 +144,9 @@ public class  UserVo implements UserDetails{
 		// TODO Auto-generated method stub
 		return false;
 	}
-
+	
+	@Override
+	public String toString() {
+		return "UserVo [userName=" + userName + ", userPassword=" + userPassword + ", authorities=" + authorities + "]";
+	}
 }
