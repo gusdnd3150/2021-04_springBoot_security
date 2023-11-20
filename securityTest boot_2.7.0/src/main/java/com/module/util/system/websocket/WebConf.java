@@ -26,6 +26,16 @@ import org.springframework.web.servlet.resource.PathResourceResolver;
 
 public class WebConf implements WebMvcConfigurer{
 
+	
+	private static final String[] CLASSPATH_RESOURCE_LOCATIONS = {
+            "classpath:/static/",
+            "classpath:/public/",
+            "classpath:/",
+            "classpath:/resources/",
+            "classpath:/META-INF/resources/",
+            "classpath:/META-INF/resources/webjars/"
+    };
+	
 	@Override
 	public void configurePathMatch(PathMatchConfigurer configurer) {
 		// TODO Auto-generated method stub
@@ -45,6 +55,8 @@ public class WebConf implements WebMvcConfigurer{
                         : new ClassPathResource("/index.html");
             }
         });
+        
+        registry.addResourceHandler("/resources").addResourceLocations(CLASSPATH_RESOURCE_LOCATIONS);
         
     }
 	@Override

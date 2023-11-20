@@ -91,29 +91,10 @@ public class JwtAuthorizationFilter extends OncePerRequestFilter {
                     logger.info("JWT token is not valid", requestURI);
                 }
                 chain.doFilter(request, response);
-
-                /*    version 1111111111
-                // [STEP3] 추출한 토큰이 유효한지 여부를 체크합니다.
-                if (TokenUtils.isValidToken(token)) {
-
-                    // [STEP4] 토큰을 기반으로 사용자 아이디를 반환 받는 메서드
-                    String userId = TokenUtils.getUserIdFromToken(token);
-                    logger.debug("[+] userId Check: " + userId);
-
-                    // [STEP5] 사용자 아이디가 존재하는지 여부 체크
-                    if (userId != null && !userId.equalsIgnoreCase("")) {
-                        chain.doFilter(request, response);
-                    } else {
-                        //throw new BusinessExceptionHandler("TOKEN isn't userId", ErrorCode.BUSINESS_EXCEPTION_ERROR);
-                    }
-                    // 토큰이 유효하지 않은 경우
-                } else {
-                    //throw new BusinessExceptionHandler("TOKEN is invalid", ErrorCode.BUSINESS_EXCEPTION_ERROR);
-                }
-                */
             }
             // [STEP2-1] 토큰이 존재하지 않는 경우
             else {
+            	
                 //throw new BusinessExceptionHandler("Token is null", ErrorCode.BUSINESS_EXCEPTION_ERROR);
             }
         } catch (Exception e) {

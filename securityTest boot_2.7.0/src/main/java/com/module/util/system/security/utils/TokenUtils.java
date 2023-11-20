@@ -221,9 +221,7 @@ public class TokenUtils {
 
     // 토큰으로 클레임을 만들고 이를 이용해 유저 객체를 만들어서 최종적으로 authentication 객체를 리턴
     public static Authentication getAuthentication(String token) {
-    	logger.info("getAuthentication ::"+ token);
         Claims claims = getClaimsFormToken(token);
-        logger.info("claims ::"+ claims);
         Collection<? extends GrantedAuthority> authorities =
                 Arrays.stream(claims.get("auth").toString().split(","))
                         .map(SimpleGrantedAuthority::new)

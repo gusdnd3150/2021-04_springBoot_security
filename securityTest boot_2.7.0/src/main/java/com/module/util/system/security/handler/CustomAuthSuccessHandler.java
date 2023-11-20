@@ -45,6 +45,8 @@ public class CustomAuthSuccessHandler extends SavedRequestAwareAuthenticationSuc
 		
 		JSONObject returnData = new JSONObject(responseMap);
 
+		
+		// 추후 처리
 		// [STEP1] 사용자의 상태가 '휴면 상태' 인 경우 응답 값으로 전달 할 데이터
 //        if (userDto.get) {
 //            responseMap.put("userInfo", userVoObj);
@@ -67,8 +69,6 @@ public class CustomAuthSuccessHandler extends SavedRequestAwareAuthenticationSuc
 //            // jsonObject.put("token", token);
 //            // response.addHeader(AuthConstants.AUTH_HEADER, AuthConstants.TOKEN_TYPE + " " + token);
 //        }
-
-		// [STEP3] 구성한 응답 값을 전달합니다.
 		response.setCharacterEncoding("UTF-8");
 		response.setContentType("application/json");
 		PrintWriter printWriter = response.getWriter();
