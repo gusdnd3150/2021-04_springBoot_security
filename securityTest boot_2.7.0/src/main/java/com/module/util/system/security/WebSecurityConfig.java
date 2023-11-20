@@ -93,7 +93,7 @@ public class WebSecurityConfig {
         .antMatchers(HttpMethod.POST, POST_WHITELIST).permitAll() // 해당 POST URL은 모두 허용
         .antMatchers("/client-user/**").hasAnyRole("ADMIN") // 권한 적용
         .anyRequest().authenticated() // 나머지 요청에 대해서는 인증을 요구
-        .and() // 로그인하는 경우에 대해 설정함
+        .and() 
         .formLogin().disable() // 로그인 페이지 사용 안함
 //        //.loginPage("/login") // 로그인 성공 URL을 설정함
 //        .successForwardUrl("/index") // 로그인 실패 URL을 설정함
