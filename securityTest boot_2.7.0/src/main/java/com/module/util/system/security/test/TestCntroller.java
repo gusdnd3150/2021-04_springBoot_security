@@ -45,11 +45,7 @@ public class TestCntroller {
     private static final Logger logger = LoggerFactory.getLogger(TestCntroller.class);
     
     
-    /**
-     * Description : 로그인 처리 
-     * @author : Hyeon woong
-     * @since : 2023. 11. 10
-     */
+    /*
     @PostMapping("/loginProcess")
     public String login(@RequestBody UserVo user) {
     	//String token =userService.login(user);
@@ -67,5 +63,5 @@ public class TestCntroller {
         
     	return token;
     }
-    
+    */
 }

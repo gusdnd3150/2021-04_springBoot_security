@@ -47,11 +47,10 @@ public class JwtAuthorizationFilter extends OncePerRequestFilter {
     	
     	String requestURI = request.getRequestURI();
 
-    	logger.info("ddddddddddddddddddd");
         // 1. 토큰이 필요하지 않은 API URL에 대해서 배열로 구성합니다.
         List<String> list = Arrays.asList(
                 "/loginProcess",
-                "/api/v1/test/generateToken",
+                "/socket",
                 "/api/v1/token/generateToken"
         );
 
@@ -81,7 +80,6 @@ public class JwtAuthorizationFilter extends OncePerRequestFilter {
                 
                 // version 222222222222
                 if (TokenUtils.isValidToken(token)) {
-                	logger.info("TokenUtils.isValidToken(token) ----"+TokenUtils.isValidToken(token));
                 	
                     Authentication authentication = TokenUtils.getAuthentication(token);
                     SecurityContextHolder.getContext().setAuthentication(authentication);

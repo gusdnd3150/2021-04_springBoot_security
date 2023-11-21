@@ -40,9 +40,6 @@ public class CustomAuthenticationProvider implements AuthenticationProvider {
     public CustomAuthenticationProvider(BCryptPasswordEncoder passwordEncoder) {
     	this.passwordEncoder = passwordEncoder;
     }
-    
-
-
 
     @Override
     public Authentication authenticate(Authentication authentication) throws AuthenticationException {

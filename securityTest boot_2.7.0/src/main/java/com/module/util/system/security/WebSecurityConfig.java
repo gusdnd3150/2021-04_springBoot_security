@@ -8,6 +8,8 @@ import com.module.util.system.security.handler.AuthenticationEntryPointImpl;
 import com.module.util.system.security.handler.CustomAuthFailureHandler;
 import com.module.util.system.security.handler.CustomAuthSuccessHandler;
 import com.module.util.system.security.handler.CustomAuthenticationProvider;
+import com.module.util.system.security.handler.LogOutHandler;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.autoconfigure.security.servlet.PathRequest;
@@ -84,13 +86,17 @@ public class WebSecurityConfig {
 //        .successForwardUrl("/index") // 로그인 실패 URL을 설정함
 //        .failureForwardUrl("/index").permitAll()
 //        .and()
+        .logout()
+            .logoutUrl("/logout")
+            .logoutSuccessHandler(logOutHandler())
+            //.invalidateHttpSession(true)
+            //.deleteCookies("JSESSIONID")
+        .and()
         .addFilterBefore(customAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class)
         .addFilterBefore(jwtAuthorizationFilter(), UsernamePasswordAuthenticationFilter.class);
         
         return http.build();
     }
-
-
   
     // 시큐리티 인증을 커스텀 인증으로 대체하여 사용
     @Bean
@@ -168,6 +174,12 @@ public class WebSecurityConfig {
     @Bean
     public AuthenticationEntryPointImpl authenticationEntryPointHandler(){
     	return new  AuthenticationEntryPointImpl();
+    }
+    
+    
+    @Bean
+    public LogOutHandler logOutHandler(){
+    	return new LogOutHandler();
     }
 
 
