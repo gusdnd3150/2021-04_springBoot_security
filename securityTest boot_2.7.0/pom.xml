@@ -11,10 +11,10 @@
 	</parent>
 	
 	<groupId>com.module</groupId>
-	<artifactId>hmas-core</artifactId>
+	<artifactId>hmgma-core</artifactId>
 	<version>0.0.1</version>
-	<name>hmas-core</name>
-	<description>아산공장 코어 앱</description>
+	<name>hmgma--app</name>
+	<description>서배너 어플리케이션</description>
 	
 	<properties>
 		<java.version>1.8</java.version>
@@ -34,7 +34,7 @@
 		<profile>
 			<id>dev</id>
 			<activation>
-				<activeByDefault>true</activeByDefault>	<!-- 프로필 미 입력 시 기본 실행되는것 설정 바꾸면 maven update 필요. -->
+				<activeByDefault>false</activeByDefault>	<!-- 프로필 미 입력 시 기본 실행되는것 설정 바꾸면 maven update 필요. -->
 			</activation>
 			<properties>
 				<spring.profiles.active>dev</spring.profiles.active>
@@ -54,7 +54,7 @@
 		<profile>
 			<id>test</id>
 			<activation>
-				<activeByDefault>false</activeByDefault>	<!-- 프로필 미 입력 시 기본 실행되는것 설정 바꾸면 maven update 필요. -->
+				<activeByDefault>true</activeByDefault>	<!-- 프로필 미 입력 시 기본 실행되는것 설정 바꾸면 maven update 필요. -->
 			</activation>
 			<properties>
 				<spring.profiles.active>test</spring.profiles.active>
@@ -66,6 +66,17 @@
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-web</artifactId>
+			<exclusions>
+				<exclusion>
+					<groupId>org.springframework.boot</groupId>
+					<artifactId>spring-boot-starter-logging</artifactId>
+				</exclusion>
+			</exclusions>
+		</dependency>
+		
+		<dependency>
+		    <groupId>org.springframework.boot</groupId>
+		    <artifactId>spring-boot-starter-log4j2</artifactId>
 		</dependency>
 
 		<dependency>
@@ -117,17 +128,22 @@
 			<artifactId>spring-security-taglibs</artifactId>
 		</dependency>
 		
-		<!-- jsp 개발에 필요한 maven -->
-		<dependency>
-			<groupId>javax.servlet</groupId>
-			<artifactId>jstl</artifactId>
-		</dependency>
-		
 		<!-- 스프링부트 웹 의존성 -->
 		<dependency>
 			<groupId>org.apache.tomcat.embed</groupId>
 			<artifactId>tomcat-embed-jasper</artifactId>
 			<scope>provided</scope>
+		</dependency>
+		
+		<!-- 스프링 카프카 통신 -->
+		<dependency>
+			<groupId>org.springframework.kafka</groupId>
+			<artifactId>spring-kafka</artifactId>
+		</dependency>
+		
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-websocket</artifactId>
 		</dependency>
 		
 		<!-- 암호화 의존성 -->
@@ -195,32 +211,20 @@
 		    <version>2.3.0</version>
 		</dependency>
 		
-		<!-- 스프링 카프카 통신 -->
-		<dependency>
-			<groupId>org.springframework.kafka</groupId>
-			<artifactId>spring-kafka</artifactId>
-		</dependency>
-		
 		<dependency>
 			<groupId>com.google.zxing</groupId>
 			<artifactId>javase</artifactId>
 			<version>3.1.0</version>
 		</dependency>
 		
-		<dependency>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-websocket</artifactId>
-			<version>2.6.2</version>
-		</dependency>
 		
-		<!--시스템 웹소켓 -->
+		<!--시스템 웹소켓-->
 		<dependency>
 		    <groupId>org.springframework.boot</groupId>
 		    <artifactId>spring-boot-starter-websocket</artifactId>
 		</dependency>
 		
-	
-	    <!-- JWT (Java JWT) 라이브러리 -->
+		<!-- JWT (Java JWT) 라이브러리 -->
 	    <dependency>
 	        <groupId>io.jsonwebtoken</groupId>
 	        <artifactId>jjwt</artifactId>

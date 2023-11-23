@@ -7,9 +7,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
-import com.module.init.InitManager;
-import com.spas.module.socket.ProtocolMain;
 import com.spas.module.socket.utility.CMap;
+import com.spas.module.socket.utility.SocketUtility;
 
 
 /**
@@ -29,15 +28,14 @@ public class InitMain {
 	@Value("${spring.datasource.password}") String dbPassWord;
 	@Value("${package_id}") String packageId;
 	
-	@Autowired InitManager initManager;
+	@Autowired StandardPBEStringEncryptor standardPBEStringEncryptor;
 	
 	public void init() {
 		try {
 			CMap<String, Object> cMap = new CMap<>();
 			cMap.put("PKG_ID", packageId);
-			initManager.loadDb(cMap);
 		} catch (Exception e) {
-			////logger.info("runProcess Exception " + e);
+			SocketUtility.exceptionLogger(logger, null, e);
 		}
 	}
 

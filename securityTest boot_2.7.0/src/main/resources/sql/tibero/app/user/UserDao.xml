@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper 
+	PUBLIC "-//mybatis.org//DTDMapper3.0//EN" 
+		   "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="UserDao">
+	
+	<select id="selectUserInfo" parameterType="string" resultType="com.module.system.security.test.UserMap">
+		
+		SELECT 
+			A.LOGIN_ID ,
+			A.LOGIN_PW ,
+			A.LOGIN_DT ,
+			A.LANG_CD,
+			A.USER_STAT,
+			A.ISACCOUNTNONEXPIRED,
+			A.ISACCOUNTNONLOCKED ,
+			A.ISCREDENTIALSNONEXPIRED ,
+			A.ISENABLED ,
+			B.AUTHS
+		FROM TB_SK_USER A
+			LEFT JOIN (
+				SELECT 
+					AUTH.LOGIN_ID,
+					AUTH.USERS||'/'||AUTH.ADMIN||'/'||AUTH.DEVELOPER AS AUTHS
+				FROM (
+					SELECT 
+						*
+					FROM (
+					    SELECT 
+							LOGIN_ID ,
+							USER_AUTH 
+						FROM TB_SK_USER_AUTH
+					)
+					PIVOT (
+					    MAX(USER_AUTH)
+					    FOR USER_AUTH IN ('ADMIN' AS ADMIN, 'USER' AS USERS, 'DEVELOPER' AS DEVELOPER)
+					)
+				) AUTH
+			) B 
+			ON A.LOGIN_ID = B.LOGIN_ID
+		WHERE 1=1
+		AND A.DEL_YN = 'N'
+		AND A.LOGIN_ID = #{username}
+	</select>
+</mapper>

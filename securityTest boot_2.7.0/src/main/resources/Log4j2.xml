@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Configuration>
+	<!--공통 속성 설정 -->
+	<Properties>
+		<Property name="LOG_LEVEL">INFO</Property> <!-- ALL || TRACE || DEBUG || INFO || WARN || ERROR || FATAL || OFF -->
+		<Property name="LOG_HOME">D:/Log/App</Property>
+		<Property name="LOG_OLD">${LOG_HOME}/old</Property>
+		<Property name="LOG_PATTERN">[%d{yyyy/MM/dd HH:mm:ss.SSS}] [%thread] [%c{1}:%L] [%-5p] - %m%n</Property>
+		<Property name="MODULE_FILE_NAME">hmgms_app</Property>
+		<Property name="SPRING_FILE_NAME">spring</Property>
+		<Property name="ROOT_FILE_NAME">root</Property>
+		<Property name="MAX_HISTORY">30</Property>
+	</Properties>
+
+	<!-- Log Appender 설정 -->
+	<Appenders>
+		<Console name="console" target="SYSTEM_OUT">
+			<PatternLayout pattern="${LOG_PATTERN}" />
+		</Console>
+		
+		<RollingFile name="moduleLog" fileName="${LOG_HOME}/${MODULE_FILE_NAME}.log" filePattern="${LOG_OLD}/${MODULE_FILE_NAME}_Old.%d{yyyy-MM-dd}.%i.log">
+			<PatternLayout pattern="${LOG_PATTERN}" />
+			<Policies>
+				<SizeBasedTriggeringPolicy size="100 MB" />
+				<TimeBasedTriggeringPolicy interval="1" modulate="true" />
+			</Policies>
+			<DefaultRolloverStrategy max="100">
+					<Delete basePath="${LOG_OLD}" maxDepth="1">
+						<IfLastModified age="${MAX_HISTORY}d" />
+					</Delete>
+				</DefaultRolloverStrategy>
+		</RollingFile>
+		
+		<RollingFile name="springLog" fileName="${LOG_HOME}/${SPRING_FILE_NAME}.log" filePattern="${LOG_OLD}/${SPRING_FILE_NAME}_Old.%d{yyyy-MM-dd}.%i.log">
+			<PatternLayout pattern="${LOG_PATTERN}" />
+			<Policies>
+				<SizeBasedTriggeringPolicy size="100 MB" />
+				<TimeBasedTriggeringPolicy interval="1" modulate="true" />
+			</Policies>
+			<DefaultRolloverStrategy max="100">
+					<Delete basePath="${LOG_OLD}" maxDepth="1">
+						<IfLastModified age="${MAX_HISTORY}d" />
+					</Delete>
+				</DefaultRolloverStrategy>
+		</RollingFile>
+		
+		<RollingFile name="rootLog" fileName="${LOG_HOME}/${ROOT_FILE_NAME}.log" filePattern="${LOG_OLD}/${ROOT_FILE_NAME}_Old.%d{yyyy-MM-dd}.%i.log">
+			<PatternLayout pattern="${LOG_PATTERN}" />
+			<Policies>
+				<SizeBasedTriggeringPolicy size="100 MB" />
+				<TimeBasedTriggeringPolicy interval="1" modulate="true" />
+			</Policies>
+			<DefaultRolloverStrategy max="100">
+					<Delete basePath="${LOG_OLD}" maxDepth="1">
+						<IfLastModified age="${MAX_HISTORY}d" />
+					</Delete>
+				</DefaultRolloverStrategy>
+		</RollingFile>
+	</Appenders>
+
+	<!--TRACE > DEBUG > INFO > WARN > ERROR > FATAL -->
+	<!--Log가 찍힐 대상 설정. -->
+	<Loggers>
+		<!-- 스프링 프레임워크에서 찍는건 level을 info로 설정 -->
+		<logger name="org.springframework" level="${LOG_LEVEL}" additivity="false">
+			<AppenderRef ref="console" />
+			<AppenderRef ref="springLog" />
+		</logger>
+		
+		<logger name="com.spas.module" level="${LOG_LEVEL}" additivity="false">
+			<AppenderRef ref="console" />
+			<AppenderRef ref="moduleLog" />
+		</logger>
+		
+		<logger name="com.module" level="${LOG_LEVEL}" additivity="false">
+			<AppenderRef ref="console" />
+			<AppenderRef ref="moduleLog" />
+		</logger>
+
+		<!-- ROOT logger -->
+		<Root level="ERROR">
+			<AppenderRef ref="console" />
+			<AppenderRef ref="rootLog" />
+		</Root>
+	</Loggers>
+</Configuration>

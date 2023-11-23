@@ -15,7 +15,7 @@ import com.spas.module.MainProcess;
 @SpringBootApplication
 @EnableScheduling
 @ComponentScan(value={"com.module", "com.spas.module"})
-@MapperScan({"com.spas.module.socket.dao", "com.module.dao"})
+@MapperScan({"com.spas.module.dao", "com.module.dao"})
 public class Application extends SpringBootServletInitializer {
 	private static final Logger logger = LoggerFactory.getLogger(Application.class);
 	public static ConfigurableApplicationContext ctx;
