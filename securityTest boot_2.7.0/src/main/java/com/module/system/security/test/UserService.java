@@ -57,4 +57,9 @@ public class UserService implements UserDetailsService{
 		return user;
 	}
 	
+	
+	public List<UserMap<String, Object>> selectUserMenu(String username){
+		return userDao.selectUserMenu(username);
+	}
+	
 }

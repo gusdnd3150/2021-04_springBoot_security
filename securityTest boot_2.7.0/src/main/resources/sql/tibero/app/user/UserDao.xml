@@ -42,4 +42,25 @@
 		AND A.DEL_YN = 'N'
 		AND A.LOGIN_ID = #{username}
 	</select>
+	
+	
+	<select id="selectUserMenu" parameterType="string" resultType="com.module.system.security.test.UserMap">
+		SELECT 
+			A.ID,
+			A.PARENT_ID,
+			A.URL,
+			A.HAS_AUTHORITY
+		FROM TB_SK_AUTH_URL A
+		WHERE 1=1
+		AND A.HAS_AUTHORITY IN (
+								SELECT 
+									--LOGIN_ID,
+									USER_AUTH
+								FROM TB_SK_USER_AUTH
+								WHERE LOGIN_ID =#{username}
+							)
+		START WITH A.PARENT_ID IS NULL
+		CONNECT BY PRIOR A.ID = A.PARENT_ID
+		ORDER SIBLINGS BY A.ID
+	</select>
 </mapper>

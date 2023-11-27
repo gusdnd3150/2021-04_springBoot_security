@@ -37,7 +37,7 @@ public class AccessDeniedHandlerImpl  implements AccessDeniedHandler  {
 		HashMap<String, Object> responseMap = new HashMap<>();
 		logger.info("AccessDeniedHandler");
 		
-		responseMap.put("message", "access denied");
+		responseMap.put("MESSAGE", "access denied");
 		
 		JSONObject returnData = new JSONObject(responseMap);
 		response.setCharacterEncoding("UTF-8");

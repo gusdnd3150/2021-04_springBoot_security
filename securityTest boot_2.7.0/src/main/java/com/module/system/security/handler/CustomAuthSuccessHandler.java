@@ -6,12 +6,16 @@ import org.codehaus.jettison.json.JSONObject;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.web.authentication.SavedRequestAwareAuthenticationSuccessHandler;
 
 import com.module.system.security.WebSecurityConfig;
 import com.module.system.security.test.UserMap;
+import com.module.system.security.test.UserService;
 import com.module.system.security.test.UserVo;
 import com.module.system.security.utils.TokenUtils;
 
@@ -27,6 +31,10 @@ import java.util.HashMap;
 @Configuration
 public class CustomAuthSuccessHandler extends SavedRequestAwareAuthenticationSuccessHandler {
 
+	
+	@Autowired
+	UserService userService;
+	
 	private static final Logger logger = LoggerFactory.getLogger(CustomAuthSuccessHandler.class);
 
 	@Override
@@ -37,17 +45,17 @@ public class CustomAuthSuccessHandler extends SavedRequestAwareAuthenticationSuc
 		// [STEP1] 사용자와 관련된 정보를 모두 조회합니다.
 		//UserVo userDto = ((UserVo) authentication.getPrincipal());
 		UserMap<String, Object> userDto = (UserMap<String, Object>) authentication.getPrincipal();
-
+		String loginId = userDto.getString("LOGIN_ID");
 		logger.info("3.1. userDto ::"+ userDto);
 		// [STEP2] 조회한 데이터를 JSONObject 형태로 파싱을 수행합니다.
 		HashMap<String, Object> responseMap = new HashMap<>();
 		
-		responseMap.put("token", TokenUtils.createToken(authentication));
-		responseMap.put("userName",userDto.getUsername());
-		responseMap.put("auth", userDto.getString("AUTHS"));
+		responseMap.put("STATUS", 200);
+		responseMap.put("TOKEN", TokenUtils.createToken(authentication));
+		responseMap.put("LOGIN_ID", loginId);
+		responseMap.put("MENU", userService.selectUserMenu(loginId));
+		responseMap.put("AUTH", userDto.getAuthorities());
 		
-		JSONObject returnData = new JSONObject(responseMap);
-
 		
 		// 추후 처리
 		// [STEP1] 사용자의 상태가 '휴면 상태' 인 경우 응답 값으로 전달 할 데이터
@@ -72,6 +80,9 @@ public class CustomAuthSuccessHandler extends SavedRequestAwareAuthenticationSuc
 //            // jsonObject.put("token", token);
 //            // response.addHeader(AuthConstants.AUTH_HEADER, AuthConstants.TOKEN_TYPE + " " + token);
 //        }
+		
+		
+		JSONObject returnData = new JSONObject(responseMap);
 		response.setCharacterEncoding("UTF-8");
 		response.setContentType("application/json");
 		PrintWriter printWriter = response.getWriter();

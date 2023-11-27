@@ -67,7 +67,7 @@ public class JwtAuthorizationFilter extends OncePerRequestFilter {
         }
 
         // [STEP1] Client에서 API를 요청할때 Header를 확인합니다.
-        String header = request.getHeader("test-header");
+        String header = request.getHeader("Authorization");
         logger.info("[+] header Check: " + header);
 
         try {
@@ -79,7 +79,6 @@ public class JwtAuthorizationFilter extends OncePerRequestFilter {
                 String token = header;
                 // version 222222222222
                 if (TokenUtils.isValidToken(token)) {
-                	
                     Authentication authentication = TokenUtils.getAuthentication(token);
                     UserMap<String, Object> user  = (UserMap<String, Object>) authentication.getPrincipal();
                     SecurityContextHolder.getContext().setAuthentication(authentication);
@@ -145,10 +144,9 @@ public class JwtAuthorizationFilter extends OncePerRequestFilter {
             resultMsg = "OTHER TOKEN ERROR";
         }
         HashMap<String, Object> jsonMap = new HashMap<>();
-        jsonMap.put("status", 401);
-        jsonMap.put("code", "9999");
-        jsonMap.put("message", resultMsg);
-        jsonMap.put("reason", e.getMessage());
+        jsonMap.put("STATUS", 401);
+        jsonMap.put("MESSAGE", resultMsg);
+        jsonMap.put("REASON", e.getMessage());
         JSONObject jsonObject = new JSONObject(jsonMap);
         logger.error(resultMsg, e);
         return jsonObject;

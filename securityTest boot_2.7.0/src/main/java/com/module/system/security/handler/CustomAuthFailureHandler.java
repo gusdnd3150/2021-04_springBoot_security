@@ -57,12 +57,9 @@ public class CustomAuthFailureHandler implements AuthenticationFailureHandler {
         response.setContentType("application/json");
         PrintWriter printWriter = response.getWriter();
 
-        logger.debug(failMsg);
-
         HashMap<String, Object> resultMap = new HashMap<>();
-        resultMap.put("userInfo", null);
-        resultMap.put("resultCode", 9999);
-        resultMap.put("message", failMsg);
+        resultMap.put("STATUS", 9999);
+        resultMap.put("MESSAGE", failMsg);
         jsonObject = new JSONObject(resultMap);
 
         printWriter.print(jsonObject);

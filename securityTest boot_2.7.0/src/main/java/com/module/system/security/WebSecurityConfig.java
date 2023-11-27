@@ -42,6 +42,7 @@ public class WebSecurityConfig {
             "/user/login-id/**",
             "/user/email/**",
             "/affiliate",
+            "/socket",
             "/system",
     };
 

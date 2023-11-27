@@ -56,7 +56,9 @@ public class LogOutHandler implements LogoutHandler {
 			
 			logger.info("AccessDeniedHandler");
 
-			responseMap.put("message", "access denied");
+			responseMap.put("MESSAGE", "access denied");
+			responseMap.put("STATUS", 200);
+			
 
 			returnData = new JSONObject(responseMap);
 			response.getWriter();
